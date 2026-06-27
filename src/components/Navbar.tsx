@@ -1,12 +1,10 @@
 import React from 'react'
 import Menu from './Menu'
 import Link from 'next/link'
-import CartIcon from './CartIcon'
 
 const Navbar = () => {
-    const user = false;
     return (
-        <div className="h-12 text-red-500 p-4 flex items-center justify-between border-b-2 border-b-red-500 uppercase md:h-24 lg:px-20 lx:px-40 xl:px-40">
+        <div className="h-12 text-red-500 p-4 flex items-center justify-between border-b-2 border-b-red-500 uppercase md:h-24 lg:px-20 xl:px-40 xl:px-40">
             <div className="hidden md:flex gap-4 flex-1">
                 <Link href="/">Home</Link>
                 <Link href="/groceries">Groceries</Link>
