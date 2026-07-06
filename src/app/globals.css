@@ -3,3 +3,38 @@
 @tailwind utilities;
  */
 @import "tailwindcss";
+
+:root {
+  --icyblue: #e2efef;
+  --teal: #226580;
+  --saffron: #E8A020;
+  --saffron-light: #F5C14A;
+  --cream: #E2EFEF;
+  --cream-dark: #F0EBE0;
+  --slate: #4A5568;
+  --slate-light: #718096;
+  --navy: #151B3A;
+  --white: #FFFFFF;
+}
+
+@theme inline {
+  --color-icyblue: var(--icyblue);
+  --color-teal: var(--teal);
+  --color-saffron: var(--saffron);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-slate: var(--slate);
+  --color-navy: var(--navy);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--charcoal);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap'); */

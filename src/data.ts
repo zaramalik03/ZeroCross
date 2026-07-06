@@ -7,6 +7,12 @@ export const groceryCategories = [
   "Produce",
   "Dairy & Eggs",
   "Pantry Staples",
+  "Bakery & Bread",
+  "Beverages",
+  "Breakfast",
+  "Frozen Foods",
+  "Condiments & Sauces",
+  "Canned & Packaged Goods"
 ];
 
 export type Grocery = {

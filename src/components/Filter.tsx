@@ -10,9 +10,9 @@ const filterGroups: FilterGroup[] = [
   {
     label: "Allergens",
     options: [
-      { label: "Peanut", value: "peanut" },
-      { label: "Tree Nut", value: "tree-nut" },
       { label: "Gluten", value: "gluten" },
+      { label: "Peanuts", value: "peanut" },
+      { label: "Tree Nuts", value: "tree-nut" },
       { label: "Dairy", value: "dairy" },
       { label: "Egg", value: "egg" },
       { label: "Soy", value: "soy" },
@@ -20,126 +20,139 @@ const filterGroups: FilterGroup[] = [
       { label: "Shellfish", value: "shellfish" },
       { label: "Sesame", value: "sesame" },
       { label: "Wheat", value: "wheat" },
-      { label: "Mustard", value: "mustard" },
-      { label: "Celery", value: "celery" },
-      { label: "Lupin", value: "lupin" },
-      { label: "Sulfites", value: "sulfites" },
     ],
   },
   {
     label: "Special Diets",
     options: [
-      { label: "Alpha-Gal", value: "alpha-gal" },
-      { label: "GLP-1 Friendly", value: "glp1-friendly" },
-      { label: "Low FODMAP", value: "low-fodmap" },
-      { label: "Low Histamine", value: "low-histamine" },
       { label: "Keto", value: "keto" },
       { label: "Paleo", value: "paleo" },
       { label: "Mediterranean", value: "mediterranean" },
-      { label: "Whole30", value: "whole30" },
       { label: "Low Carb", value: "low-carb" },
       { label: "High Protein", value: "high-protein" },
+      { label: "Low FODMAP", value: "low-fodmap" },
     ],
   },
   {
-    label: "Lifestyle / Religion",
+    label: "Lifestyle",
     options: [
       { label: "Vegan", value: "vegan" },
       { label: "Vegetarian", value: "vegetarian" },
       { label: "Pescatarian", value: "pescatarian" },
       { label: "Halal", value: "halal" },
       { label: "Kosher", value: "kosher" },
-      { label: "Alcohol-Free", value: "alcohol-free" },
-      { label: "Pork-Free", value: "pork-free" },
-      { label: "Beef-Free", value: "beef-free" },
-      { label: "Jain-Friendly", value: "jain-friendly" },
-      { label: "Hindu-Friendly", value: "hindu-friendly" },
     ],
   },
   {
-    label: "Cultural Cuisine",
+    label: "Cuisine",
     options: [
-      { label: "American", value: "american" },
-      { label: "Italian", value: "italian" },
-      { label: "Mexican", value: "mexican" },
-      { label: "Chinese", value: "chinese" },
       { label: "Japanese", value: "japanese" },
-      { label: "Korean", value: "korean" },
       { label: "Indian", value: "indian" },
-      { label: "Middle Eastern", value: "middle-eastern" },
-      { label: "Mediterranean", value: "mediterranean-cuisine" },
+      { label: "Mexican", value: "mexican" },
       { label: "Thai", value: "thai" },
-      { label: "Vietnamese", value: "vietnamese" },
-      { label: "Latin American", value: "latin-american" },
-      { label: "Caribbean", value: "caribbean" },
+      { label: "Korean", value: "korean" },
+      { label: "Mediterranean", value: "mediterranean-cuisine" },
+      { label: "Middle Eastern", value: "middle-eastern" },
       { label: "African", value: "african" },
+      { label: "Latin American", value: "latin-american" },
     ],
   },
 ];
 
-const Filter = () => {
+type FilterProps = {
+  onFilterChange?: (selected: string[]) => void;
+};
+
+const Filter = ({ onFilterChange }: FilterProps) => {
   const [selected, setSelected] = useState<string[]>([]);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const toggleFilter = (value: string) => {
-    setSelected((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
+    const next = selected.includes(value)
+      ? selected.filter(item => item !== value)
+      : [...selected, value];
+    setSelected(next);
+    onFilterChange?.(next);
   };
 
-  const clearAll = () => setSelected([]);
+  const clearAll = () => {
+    setSelected([]);
+    onFilterChange?.([]);
+  };
 
-  const hasSelected = selected.length > 0;
+  const toggleGroup = (label: string) => {
+    setCollapsed(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
-    <div className="mt-8 space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Filters:
-        </span>
-
-        <button
-          type="button"
-          onClick={clearAll}
-          disabled={!hasSelected}
-          className="rounded-full border px-3 py-1 text-xs font-semibold transition border-border bg-card text-foreground hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Clear All
-        </button>
-
+    <div className="space-y-6" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#4A5568' }}>
+          Filter
+        </h3>
         {selected.length > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {selected.length} selected
-          </span>
+          <button
+            onClick={clearAll}
+            className="text-xs font-medium transition-colors duration-150"
+            style={{ color: '#E8A020' }}
+          >
+            Clear all ({selected.length})
+          </button>
         )}
       </div>
 
-      {filterGroups.map((group) => (
-        <div key={group.label} className="space-y-2">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {group.label}
-          </h3>
+      {/* Active chips */}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map(val => {
+            const label = filterGroups.flatMap(g => g.options).find(o => o.value === val)?.label ?? val;
+            return (
+              <button
+                key={val}
+                onClick={() => toggleFilter(val)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+                style={{ backgroundColor: '#1A3D2B', color: '#FAF7F0' }}
+              >
+                {label} ×
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-          <div className="flex flex-wrap gap-2">
-            {group.options.map((option) => {
-              const active = selected.includes(option.value);
-
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => toggleFilter(option.value)}
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                    active
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-card text-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
+      {/* Groups */}
+      {filterGroups.map(group => (
+        <div key={group.label} className="border-t pt-4" style={{ borderColor: '#E5E7EB' }}>
+          <button
+            className="flex items-center justify-between w-full mb-3"
+            onClick={() => toggleGroup(group.label)}
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#4A5568' }}>
+              {group.label}
+            </span>
+            <span className="text-xs" style={{ color: '#9CA3AF' }}>{collapsed[group.label] ? '▶' : '▼'}</span>
+          </button>
+          {!collapsed[group.label] && (
+            <div className="flex flex-wrap gap-2">
+              {group.options.map(option => {
+                const active = selected.includes(option.value);
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => toggleFilter(option.value)}
+                    className="px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150"
+                    style={active
+                      ? { backgroundColor: '#1A3D2B', color: '#FAF7F0', borderColor: '#1A3D2B' }
+                      : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }
+                    }
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -147,3 +160,151 @@ const Filter = () => {
 };
 
 export default Filter;
+
+// Old filter from last week
+// type FilterGroup = {
+//   label: string;
+//   options: { label: string; value: string }[];
+// };
+
+// const filterGroups: FilterGroup[] = [
+//   {
+//     label: "Allergens",
+//     options: [
+//       { label: "Peanut", value: "peanut" },
+//       { label: "Tree Nut", value: "tree-nut" },
+//       { label: "Gluten", value: "gluten" },
+//       { label: "Dairy", value: "dairy" },
+//       { label: "Egg", value: "egg" },
+//       { label: "Soy", value: "soy" },
+//       { label: "Fish", value: "fish" },
+//       { label: "Shellfish", value: "shellfish" },
+//       { label: "Sesame", value: "sesame" },
+//       { label: "Wheat", value: "wheat" },
+//       { label: "Mustard", value: "mustard" },
+//       { label: "Celery", value: "celery" },
+//       { label: "Lupin", value: "lupin" },
+//       { label: "Sulfites", value: "sulfites" },
+//     ],
+//   },
+//   {
+//     label: "Special Diets",
+//     options: [
+//       { label: "Alpha-Gal", value: "alpha-gal" },
+//       { label: "GLP-1 Friendly", value: "glp1-friendly" },
+//       { label: "Low FODMAP", value: "low-fodmap" },
+//       { label: "Low Histamine", value: "low-histamine" },
+//       { label: "Keto", value: "keto" },
+//       { label: "Paleo", value: "paleo" },
+//       { label: "Mediterranean", value: "mediterranean" },
+//       { label: "Whole30", value: "whole30" },
+//       { label: "Low Carb", value: "low-carb" },
+//       { label: "High Protein", value: "high-protein" },
+//     ],
+//   },
+//   {
+//     label: "Lifestyle / Religion",
+//     options: [
+//       { label: "Vegan", value: "vegan" },
+//       { label: "Vegetarian", value: "vegetarian" },
+//       { label: "Pescatarian", value: "pescatarian" },
+//       { label: "Halal", value: "halal" },
+//       { label: "Kosher", value: "kosher" },
+//       { label: "Alcohol-Free", value: "alcohol-free" },
+//       { label: "Pork-Free", value: "pork-free" },
+//       { label: "Beef-Free", value: "beef-free" },
+//       { label: "Jain-Friendly", value: "jain-friendly" },
+//       { label: "Hindu-Friendly", value: "hindu-friendly" },
+//     ],
+//   },
+//   {
+//     label: "Cultural Cuisine",
+//     options: [
+//       { label: "American", value: "american" },
+//       { label: "Italian", value: "italian" },
+//       { label: "Mexican", value: "mexican" },
+//       { label: "Chinese", value: "chinese" },
+//       { label: "Japanese", value: "japanese" },
+//       { label: "Korean", value: "korean" },
+//       { label: "Indian", value: "indian" },
+//       { label: "Middle Eastern", value: "middle-eastern" },
+//       { label: "Mediterranean", value: "mediterranean-cuisine" },
+//       { label: "Thai", value: "thai" },
+//       { label: "Vietnamese", value: "vietnamese" },
+//       { label: "Latin American", value: "latin-american" },
+//       { label: "Caribbean", value: "caribbean" },
+//       { label: "African", value: "african" },
+//     ],
+//   },
+// ];
+
+// const Filter = () => {
+//   const [selected, setSelected] = useState<string[]>([]);
+
+//   const toggleFilter = (value: string) => {
+//     setSelected((prev) =>
+//       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+//     );
+//   };
+
+//   const clearAll = () => setSelected([]);
+
+//   const hasSelected = selected.length > 0;
+
+//   return (
+//     <div className="mt-8 space-y-6">
+//       <div className="flex flex-wrap items-center gap-2">
+//         <span className="mr-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+//           Filters:
+//         </span>
+
+//         <button
+//           type="button"
+//           onClick={clearAll}
+//           disabled={!hasSelected}
+//           className="rounded-full border px-3 py-1 text-xs font-semibold transition border-border bg-card text-foreground hover:border-foreground/40 disabled:cursor-not-allowed disabled:opacity-50"
+//         >
+//           Clear All
+//         </button>
+
+//         {selected.length > 0 && (
+//           <span className="text-xs text-muted-foreground">
+//             {selected.length} selected
+//           </span>
+//         )}
+//       </div>
+
+//       {filterGroups.map((group) => (
+//         <div key={group.label} className="space-y-2">
+//           <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+//             {group.label}
+//           </h3>
+
+//           <div className="flex flex-wrap gap-2">
+//             {group.options.map((option) => {
+//               const active = selected.includes(option.value);
+
+//               return (
+//                 <button
+//                   key={option.value}
+//                   type="button"
+//                   aria-pressed={active}
+//                   onClick={() => toggleFilter(option.value)}
+//                   className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+//                     active
+//                       ? "border-foreground bg-foreground text-background"
+//                       : "border-border bg-card text-foreground hover:border-foreground/40"
+//                   }`}
+//                 >
+//                   {option.label}
+//                 </button>
+//               );
+//             })}
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// };
+
+// export default Filter;
