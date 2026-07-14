@@ -12,29 +12,6 @@ export default function LoginPage() {
       className="min-h-screen flex"
       style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }}
     >
-      {/* Left panel — decorative */}
-      {/* <div
-        className="hidden lg:flex flex-col justify-between p-12 w-2/5"
-        style={{ backgroundColor: '#1A3D2B' }}
-      >
-        <Link href="/" style={{ fontFamily: 'Playfair Display, Georgia, serif', color: '#FAF7F0', fontSize: 22, fontWeight: 700 }}>
-          Zero<span style={{ color: '#E8A020' }}>Cross</span>
-        </Link>
-        <div>
-          <div className="text-6xl mb-6">🌍</div>
-          <h2
-            className="text-3xl mb-4 leading-tight"
-            style={{ fontFamily: 'Playfair Display, Georgia, serif', color: '#FAF7F0' }}
-          >
-            Safe food from<br />every cuisine.
-          </h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#A7C4B5' }}>
-            Create your allergen profile once. Every search result, recipe, and restaurant is filtered to match your needs — automatically.
-          </p>
-        </div>
-        <div className="text-xs" style={{ color: '#6B9E84' }}>© 2026 ZeroCross</div>
-      </div> */}
-
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
@@ -106,7 +83,6 @@ export default function LoginPage() {
           >
             Continue with Google
           </button>
-
           <p className="text-center text-xs" style={{ color: '#6B7280' }}>
             {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
             <button
@@ -116,6 +92,9 @@ export default function LoginPage() {
             >
               {mode === 'login' ? 'Sign up' : 'Sign in'}
             </button>
+          </p>
+          <p className="text-center text-xs" style={{ color: '#000000' }}>
+              Have a problem? Contact us!
           </p>
         </div>
       </div>

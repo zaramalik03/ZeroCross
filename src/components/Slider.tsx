@@ -69,10 +69,10 @@ export default function Slider() {
             >
               Allergen-free food access<br />
               <span style={{ color: '#226580', fontStyle: 'italic'}}>within reach</span><br />
-              of every neighborhood.
+              everywhere you go.
             </h1>
             <p className="text-lg max-w-md leading-relaxed" style={{ color: '#545554' }}>
-              ZeroCross aggregates certified allergen-free production spaces and removes the noise for people with dietary restrictions.
+              ZeroCross brings together certified allergen-free places, products, and recipes, removing the noise for people with dietary restrictions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -294,7 +294,7 @@ export default function Slider() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/groceries"
+              href="/search/groceries"
               className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
               style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
             >
@@ -306,6 +306,13 @@ export default function Slider() {
               style={{ borderColor: '#A7C4B5', color: '#151b3a', backgroundColor: '#ffffff' }}
             >
               Discover Recipes
+            </Link>
+            <Link
+              href="/search/places"
+              className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
+              style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
+            >
+              Browse Dining Areas
             </Link>
           </div>
         </div>

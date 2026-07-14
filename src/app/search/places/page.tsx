@@ -1,6 +1,5 @@
 "use client"
 import React from 'react'
-import Filter from '@/components/Filter'
 import { diningAreas, type DiningArea } from '@/data'
 
 const diningCategories = [
@@ -15,10 +14,10 @@ const diningCategories = [
   { category: 'Ice Cream & Dessert Shops', symbol: '🍦' }
 ]
 
-const ratingBar = (rating: number) => {
-  const pct = ((rating - 3.5) / 1.5) * 100
-  return Math.min(100, Math.max(0, pct))
-}
+// const ratingBar = (rating: number) => {
+//   const pct = ((rating - 3.5) / 1.5) * 100
+//   return Math.min(100, Math.max(0, pct))
+// }
 
 const tagColors: Record<string, { bg: string; text: string }> = {
   'gluten-free': { bg: '#D1FAE5', text: '#065F46' },
@@ -197,7 +196,7 @@ export default function DiningPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search for dining spaces..."
+          placeholder="Search for dining spaces based on your location"
           className="w-full px-5 py-3 rounded-full text-sm outline-none border"
           style={{ borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', color: '#1A3D2B' }}
         />
@@ -208,7 +207,8 @@ export default function DiningPage() {
             {filtered.map((dining) => (
                 <div key={dining.id} className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200">
                     <h3 className="text-lg font-semibold mb-2">{dining.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{dining.category}</p>
+                    <p className="text-sm text-black-600 mb-2">{dining.description}</p>
+                    <p className="text-sm text-gray-600 mb-2">{dining.address}</p>
                     <div className="flex flex-wrap gap-2">
                         {dining.dietaryTags.map((tag) => {
                             const style = getTagStyle(tag)

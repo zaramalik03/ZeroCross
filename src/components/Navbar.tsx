@@ -1,6 +1,5 @@
 "use client"
 import React, { useState } from 'react'
-import Menu from './Menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
  
@@ -11,8 +10,8 @@ const Navbar = () => {
 
     const links = [
         { href: '/', label: 'Home' },
-        { href: '/groceries', label: 'Groceries' },
-        { href: '/dining', label: 'Dining' },
+        { href: '/search/groceries', label: 'Groceries' },
+        { href: '/search/places', label: 'Dining' },
         { href: '/recipes', label: 'Recipes' },
         { href: '/search', label: 'Search' },
         // { href: '/blogs', label: 'Community' },
@@ -61,7 +60,14 @@ const Navbar = () => {
                     >
                         Sign In
                     </Link>
-                </div>
+                    <Link
+                        href="/onboarding"
+                        className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-200"
+                        style={{ color: '#ffffff', backgroundColor: '#151b3a' }}
+                    >
+                        Profile
+                    </Link>
+                </div>                
 
                 {/* Mobile menu button */}
                 <button
@@ -97,6 +103,14 @@ const Navbar = () => {
                     >
                         Sign In
                     </Link>
+                    <Link
+                        href="/onboarding"
+                        className="text-sm font-semibold text-center py-2 rounded-full"
+                        style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        Build my Profile
+                    </Link>                        
                 </div>
             )}
         </nav>

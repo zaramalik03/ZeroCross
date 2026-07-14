@@ -47,7 +47,7 @@ export default function SearchPage() {
             </div>
             {/* If clicked on groceries, show database of all allergen-free groceries */}
             {/* If clicked on places, show database of all allergen-free restaurants and dining places */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
                 <form onSubmit={handleSearch}>
                     <input
                         type="text"
@@ -80,7 +80,7 @@ export default function SearchPage() {
                 ) : (
                     <p>No results found.</p>
                 )}
-            </div>
+            </div> */}
         </div>
     )
 }

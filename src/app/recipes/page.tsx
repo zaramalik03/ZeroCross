@@ -1,27 +1,28 @@
 "use client"
 import React from 'react'
-import Filter from '@/components/Filter'
-import { recipes, type Recipe } from '@/data'
+import Link from 'next/link'
+// import Filter from '@/components/Filter'
+// import { recipes, type Recipe } from '@/data'
 
-const difficultyColors: Record<string, { bg: string; text: string }> = {
-  Easy: { bg: '#D1FAE5', text: '#065F46' },
-  Medium: { bg: '#FEF3C7', text: '#92400E' },
-  Hard: { bg: '#FEE2E2', text: '#991B1B' },
-}
+// const difficultyColors: Record<string, { bg: string; text: string }> = {
+//   Easy: { bg: '#D1FAE5', text: '#065F46' },
+//   Medium: { bg: '#FEF3C7', text: '#92400E' },
+//   Hard: { bg: '#FEE2E2', text: '#991B1B' },
+// }
 
 export default function RecipesPage() {
-  const [selectedFilters, setSelectedFilters] = React.useState<string[]>([])
-  const [search, setSearch] = React.useState('')
-  const [difficulty, setDifficulty] = React.useState<string | null>(null)
+  // const [selectedFilters, setSelectedFilters] = React.useState<string[]>([])
+  // const [search, setSearch] = React.useState('')
+  // const [difficulty, setDifficulty] = React.useState<string | null>(null)
 
-  const filtered = React.useMemo(() => {
-    return recipes.filter((r: Recipe) => {
-      const searchOk = !search || r.name.toLowerCase().includes(search.toLowerCase())
-      const diffOk = !difficulty || r.difficulty === difficulty
-      const filterOk = selectedFilters.length === 0 || selectedFilters.every(f => r.dietaryTags.includes(f))
-      return searchOk && diffOk && filterOk
-    })
-  }, [selectedFilters, search, difficulty])
+  // const filtered = React.useMemo(() => {
+  //   return recipes.filter((r: Recipe) => {
+  //     const searchOk = !search || r.name.toLowerCase().includes(search.toLowerCase())
+  //     const diffOk = !difficulty || r.difficulty === difficulty
+  //     const filterOk = selectedFilters.length === 0 || selectedFilters.every(f => r.dietaryTags.includes(f))
+  //     return searchOk && diffOk && filterOk
+  //   })
+  // }, [selectedFilters, search, difficulty])
 
   return (
     <div style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -30,17 +31,25 @@ export default function RecipesPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#226580' }}>Recipes</p>
           <h1 style={{ fontFamily: 'Fraunces, serif', fontWeight: 550, color: '#151b3a' }} className="text-4xl lg:text-5xl mb-3">
-            Variety of Recipes to Choose From
+            Recipes Page Coming Soon
           </h1>
           <p style={{ color: '#151b3a' }} className="text-base max-w-xl">
-            Recipes developed in certified allergen-free production spaces — spanning multiple flavors of cuisines
+            Recipes developed in certified allergen-free production spaces — spanning multiple flavors of cuisines.
+            Check out our personalized recipe generator today!
           </p>
         </div>
+        <div style={{ backgroundColor: '#e2efef' }} className="px-16 py-8">
+            <Link 
+              href="/recipe-generator"
+              className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
+              style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
+              >Click here</Link>
+          </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10">
+      {/* <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10"> */}
         {/* Search + quick filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        {/* <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <input
             type="text"
             placeholder="Search recipes..."
@@ -152,9 +161,9 @@ export default function RecipesPage() {
                 })}
               </div>
             )}
-          </div>
-        </div>
-      </div>
+          </div> 
+        </div> 
+      </div> */}
     </div>
   )
 }

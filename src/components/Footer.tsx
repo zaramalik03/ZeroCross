@@ -20,7 +20,7 @@ const Footer = () => {
                     <div>
                         <h4 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#545554' }}>Explore</h4>
                         <div className="flex flex-col gap-2">
-                            {[['Groceries', '/groceries'], ['Dining', '/dining'], ['Recipes', '/recipes'], ['Community', '/blogs']].map(([label, href]) => (
+                            {[['Groceries', '/search/groceries'], ['Dining', '/search/places'], ['Recipes', '/recipes'], ['Community', '/blogs']].map(([label, href]) => (
                                 <Link key={href} href={href} className="text-sm transition-colors duration-150" style={{ color: '#151b3a' }}>
                                     {label}
                                 </Link>
