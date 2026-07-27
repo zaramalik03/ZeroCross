@@ -14,61 +14,13 @@ const tagColors: Record<string, { bg: string; text: string }> = {
 
 // Add all east asian, south asian, southeast asian, european, middle eastern, latin american, and african categories for groceries
 const global_categories = [
-  { flag: '🇯🇵', name: 'Japanese' },
-  { flag: '🇰🇷', name: 'Korean' },
-  { flag: '🇨🇳', name: 'Chinese' },
-  { flag: '🇹🇭', name: 'Thai' },
-  { flag: '🇻🇳', name: 'Vietnamese' },
-  { flag: '🇲🇾', name: 'Malaysian' },
-  { flag: '🇮🇩', name: 'Indonesian' },
-  { flag: '🇵🇭', name: 'Filipino' },
-  { flag: '🇰🇭', name: 'Cambodian' },
-  { flag: '🇱🇦', name: 'Laotian' },
-  { flag: '🇲🇲', name: 'Burmese' },
-  { flag: '🇳🇵', name: 'Nepalese' },
-  { flag: '🇮🇳', name: 'Indian' },
-  { flag: '🇵🇰', name: 'Pakistani' },
-  { flag: '🇧🇩', name: 'Bangladeshi' },
-  { flag: '🇱🇰', name: 'Sri Lankan' },
-  { flag: '🇲🇽', name: 'Mexican' },
-  { flag: '🇵🇪', name: 'Peruvian' },
-  { flag: '🇨🇴', name: 'Colombian' },
-  { flag: '🇦🇷', name: 'Argentinian' },
-  { flag: '🇧🇷', name: 'Brazilian' },
-  { flag: '🇨🇱', name: 'Chilean' },
-  { flag: '🇪🇨', name: 'Ecuadorean' },
-  { flag: '🇨🇦', name: 'Canadian' },
-  { flag: '🇺🇸', name: 'American' },
-  { flag: '🇱🇧', name: 'Lebanese' },
-  { flag: '🇮🇷', name: 'Iranian' },
-  { flag: '🇸🇦', name: 'Saudi' },
-  { flag: '🇪🇬', name: 'Egyptian' },
-  { flag: '🇹🇷', name: 'Turkish' },
-  { flag: '🇪🇹', name: 'Ethiopian' },
-  { flag: '🇳🇬', name: 'Nigerian' },
-  { flag: '🇿🇦', name: 'South African' },
-  { flag: '🇰🇪', name: 'Kenyan' },
-  { flag: '🇲🇦', name: 'Moroccan' },
-  { flag: '🇹🇳', name: 'Tunisian' },
-  { flag: '🇮🇱', name: 'Israeli' },
-  { flag: '🇮🇹', name: 'Italian' },
-  { flag: '🇫🇷', name: 'French' },
-  { flag: '🇪🇸', name: 'Spanish' },
-  { flag: '🇬🇷', name: 'Greek' },
-  { flag: '🇵🇹', name: 'Portuguese' },
-  { flag: '🇩🇪', name: 'German' },
-  { flag: '🇵🇱', name: 'Polish' },
-  { flag: '🇷🇺', name: 'Russian' },
-  { flag: '🇧🇪', name: 'Belgian' },
-  { flag: '🇳🇱', name: 'Dutch' },
-  { flag: '🇸🇪', name: 'Swedish' },
-  { flag: '🇩🇰', name: 'Danish' },
-  { flag: '🇫🇮', name: 'Finnish' },
-  { flag: '🇳🇴', name: 'Norwegian' },
-  { flag: '🇨🇭', name: 'Swiss' },
-  { flag: '🇦🇹', name: 'Austrian' },
-  { flag: '🇮🇪', name: 'Irish' },
-  { flag: '🇬🇧', name: 'British' },
+  'Mexican/Latin American',
+  'Asian', 
+  'African',
+  'Thai',
+  'Middle Eastern', 
+  'Carribean', 
+  'European'
 ]
 
 const getTagStyle = (tag: string) => tagColors[tag] || { bg: '#F3F4F6', text: '#374151' }
@@ -95,10 +47,10 @@ export default function GroceriesPage() {
         <div className="max-w-7xl mx-auto">
           <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#226580' }}>Groceries</p>
           <h1 style={{ fontFamily: 'Fraunces, serif', fontWeight: 550, color: '#151b3a' }} className="text-4xl lg:text-5xl mb-3">
-            Variety of Groceries to Choose From
+            Discover Products
           </h1>
           <p style={{ color: '#151b3a' }} className="text-base max-w-xl">
-            Explore a curated selection of allergen-free groceries, verified for safety and quality. From gluten-free to nut-free, find products that fit your dietary needs.
+            Explore a curated selection of allergen-free products, verified for safety and quality. From gluten-free to nut-free, find products that fit your dietary needs.
           </p>
         </div>
       </div>
@@ -146,15 +98,15 @@ export default function GroceriesPage() {
           </button>
           {global_categories.map((category) => (
             <button
-              key={category.name}
-              onClick={() => setSelectedCategory(category.name)}
+              key={category}
+              onClick={() => setSelectedCategory(category)}
               className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-              style={selectedCategory === category.name
+              style={selectedCategory === category
                 ? { backgroundColor: '#1A3D2B', color: '#FAF7F0', borderColor: '#1A3D2B' }
                 : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }
               }
             >
-              {category.flag} {category.name}
+              {category}
             </button>
           ))}
         </div>

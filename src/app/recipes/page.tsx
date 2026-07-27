@@ -38,7 +38,7 @@ export default function RecipesPage() {
             Check out our personalized recipe generator today!
           </p>
         </div>
-        <div style={{ backgroundColor: '#e2efef' }} className="px-16 py-8">
+        <div style={{ backgroundColor: '#e2efef' }} className="px-8 py-8">
             <Link 
               href="/recipe-generator"
               className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"

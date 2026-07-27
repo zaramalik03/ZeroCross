@@ -17,7 +17,7 @@ export default function Onboarding() {
   const [cuisines, setCuisines]   = useState<string[]>([])
 
   const finish = () => {
-    saveProfile({ allergens, diets, cuisines, completedOnboarding: true })
+    saveProfile({ allergens, diets, completedOnboarding: true })
     router.push('/profile')
   }
 

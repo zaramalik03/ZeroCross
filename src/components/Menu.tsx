@@ -2,7 +2,6 @@
 
 import React, {useState} from 'react'
 import Link from 'next/link'
-import CartIcon from './CartIcon'
 // import Image from 'next/Image';
 
 const links = [
@@ -25,9 +24,6 @@ const Menu = () => {
           ))}
           <Link href="/login" onClick={() => setOpen(false)}>
             Login
-          </Link>
-          <Link href="/cart" onClick={() => setOpen(false)}>
-            <CartIcon />
           </Link>
         </div>
       )}

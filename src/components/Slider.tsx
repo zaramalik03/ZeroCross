@@ -80,7 +80,7 @@ export default function Slider() {
                 className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200 text-center"
                 style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
               >
-                Browse the Database →
+                Browse Options →
               </Link>
               <Link
                 href="/recipes"
