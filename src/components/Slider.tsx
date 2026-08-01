@@ -2,16 +2,16 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-const cuisines = [
-  { flag: '🇯🇵', name: 'Japanese', dish: 'Miso Ramen', tags: ['gluten-free', 'nut-free'] },
-  { flag: '🇮🇳', name: 'Indian', dish: 'Dal Tadka', tags: ['gluten-free', 'vegan'] },
-  { flag: '🇲🇽', name: 'Mexican', dish: 'Tacos de Canasta', tags: ['gluten-free', 'nut-free'] },
-  { flag: '🇱🇧', name: 'Lebanese', dish: 'Mezze Platter', tags: ['vegan', 'gluten-free'] },
-  { flag: '🇹🇭', name: 'Thai', dish: 'Pad See Ew', tags: ['gluten-free', 'nut-free'] },
-  { flag: '🇪🇹', name: 'Ethiopian', dish: 'Injera & Wot', tags: ['gluten-free', 'vegan'] },
-  { flag: '🇵🇪', name: 'Peruvian', dish: 'Ceviche', tags: ['gluten-free', 'pescatarian'] },
-  { flag: '🇰🇷', name: 'Korean', dish: 'Bibimbap', tags: ['gluten-free', 'nut-free'] },
-]
+// const cuisines = [
+//   { flag: '🇯🇵', name: 'Japanese', dish: 'Miso Ramen', tags: ['gluten-free', 'nut-free'] },
+//   { flag: '🇮🇳', name: 'Indian', dish: 'Dal Tadka', tags: ['gluten-free', 'vegan'] },
+//   { flag: '🇲🇽', name: 'Mexican', dish: 'Tacos de Canasta', tags: ['gluten-free', 'nut-free'] },
+//   { flag: '🇱🇧', name: 'Lebanese', dish: 'Mezze Platter', tags: ['vegan', 'gluten-free'] },
+//   { flag: '🇹🇭', name: 'Thai', dish: 'Pad See Ew', tags: ['gluten-free', 'nut-free'] },
+//   { flag: '🇪🇹', name: 'Ethiopian', dish: 'Injera & Wot', tags: ['gluten-free', 'vegan'] },
+//   { flag: '🇵🇪', name: 'Peruvian', dish: 'Ceviche', tags: ['gluten-free', 'pescatarian'] },
+//   { flag: '🇰🇷', name: 'Korean', dish: 'Bibimbap', tags: ['gluten-free', 'nut-free'] },
+// ]
 
 const steps = [
   { num: '01', title: 'Set your allergen profile', desc: 'Tell us your restrictions once. Every result you see is filtered to match — automatically.' },
@@ -28,12 +28,12 @@ const allergens = [
 export default function Slider() {
   const [activeCuisine, setActiveCuisine] = useState(0)
 
-  useEffect(() => {
-    const t = setInterval(() => setActiveCuisine(c => (c + 1) % cuisines.length), 2800)
-    return () => clearInterval(t)
-  }, [])
+  // useEffect(() => {
+  //   const t = setInterval(() => setActiveCuisine(c => (c + 1) % cuisines.length), 2800)
+  //   return () => clearInterval(t)
+  // }, [])
 
-  const c = cuisines[activeCuisine]
+  // const c = cuisines[activeCuisine]
 
   return (
     <div style={{ fontFamily: 'Fraunces, system-ui, serif', fontWeight: 550, color: '#151b3a' }}>
@@ -65,92 +65,31 @@ export default function Slider() {
             </div>
             <h1
               className="text-5xl lg:text-6xl xl:text-7xl leading-tight"
-              style={{ fontFamily: "Fraunces, serif", fontWeight: 550, color:'#151b3a' }}
+              style={{ fontFamily: "Fraunces, serif", fontWeight: 550, color:'#020307' }}
             >
-              Allergen-free food access<br />
-              <span style={{ color: '#226580', fontStyle: 'italic'}}>within reach</span><br />
-              everywhere you go.
+              Discover flavorful, globally-inspired foods, accommodating to your allergens.
             </h1>
             <p className="text-lg max-w-md leading-relaxed" style={{ color: '#545554' }}>
-              ZeroCross brings together certified allergen-free places, products, and recipes, removing the noise for people with dietary restrictions.
+              We bring together allergen-free places, products, and recipes, removing the noise for people with dietary restrictions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link
+              {/* <Link
                 href="/search"
                 className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200 text-center"
                 style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
               >
                 Browse Options →
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 href="/recipes"
                 className="px-8 py-4 rounded-full font-semibold text-sm border-2 text-center transition-all duration-200"
                 style={{ borderColor: '#A7C4B5', backgroundColor: '#ffffff' }}
               >
                 Explore Recipes
-              </Link>
+              </Link> */}
             </div>
           </div>
-
-          {/* Right: rotating cuisine card */}
-          {/* <div className="flex-1 flex items-center justify-center lg:justify-end z-10">
-            <div
-              className="rounded-3xl shadow-2xl p-10 flex flex-col items-center gap-6 text-center transition-all duration-500"
-              style={{ backgroundColor: '#FFFFFF', minWidth: 300, maxWidth: 360 }}
-            >
-              <div className="text-7xl">{c.flag}</div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#6B9E84' }}>
-                  {c.name} Cuisine
-                </p>
-                <h2
-                  className="text-2xl font-bold"
-                  style={{ fontFamily: 'Playfair Display, Georgia, serif', color: '#151b3a' }}
-                >
-                  {c.dish}
-                </h2>
-              </div>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {c.tags.map(t => (
-                  <span
-                    key={t}
-                    className="px-3 py-1 rounded-full text-xs font-semibold"
-                    style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
-                  >
-                    ✓ {t}
-                  </span>
-                ))}
-              </div>
-              <div className="flex gap-1.5">
-                {cuisines.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveCuisine(i)}
-                    className="rounded-full transition-all duration-200"
-                    style={{
-                      width: i === activeCuisine ? 20 : 6,
-                      height: 6,
-                      backgroundColor: i === activeCuisine ? '#E8A020' : '#D1D5DB',
-                    }}
-                    aria-label={`Cuisine ${i + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div> */}
         </div>
-
-        {/* Stat strip */}
-        {/* <div className="relative z-10 border-t" style={{ borderColor: '#2A5C42', backgroundColor: '#152E21' }}>
-          <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[['500+', 'Production Spaces'], ['40+', 'Global Cuisines'], ['9', 'Allergens Screened'], ['100%', 'Community Verified']].map(([val, label]) => (
-              <div key={label}>
-                <div className="text-2xl font-bold" style={{ color: '#E8A020' }}>{val}</div>
-                <div className="text-xs mt-0.5" style={{ color: '#6B9E84' }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div> */}
       </section>
 
       {/* ── HOW IT WORKS ── */}
@@ -222,61 +161,6 @@ export default function Slider() {
           </div>
         </div>
       </section>
-
-      {/* ── WORLD CUISINES TEASER ── */}
-      {/* <section className="py-24 px-6 lg:px-12" style={{ backgroundColor: '#e2efef' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#E8A020' }}>Our Mission</p>
-              <h2
-                className="text-4xl lg:text-5xl mb-6 leading-tight"
-                style={{ fontFamily: 'Playfair Display, Georgia, serif', color: '#1A3D2B' }}
-              >
-                Dietary restrictions should not mean<br />
-                <em>culinary restrictions.</em>
-              </h2>
-              <p className="text-base leading-relaxed mb-8" style={{ color: '#4A5568' }}>
-                We built ZeroCross because people with gluten sensitivities, nut allergies, and other dietary needs deserve access to the full richness of global cuisine — not just a corner of it.
-              </p>
-              <Link
-                href="/dining"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-200"
-                style={{ backgroundColor: '#1A3D2B', color: '#FAF7F0' }}
-              >
-                Find Dining Near You →
-              </Link>
-            </div>
-            <div className="flex-1 grid grid-cols-2 gap-4">
-              {cuisines.slice(0, 4).map(c => (
-                <div
-                  key={c.name}
-                  className="rounded-2xl p-6 flex flex-col gap-3"
-                  style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
-                >
-                  <span className="text-3xl">{c.flag}</span>
-                  <div>
-                    <div className="font-semibold text-sm" style={{ color: '#1A3D2B' }}>{c.dish}</div>
-                    <div className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{c.name}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {c.tags.map(t => (
-                      <span
-                        key={t}
-                        className="text-xs px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section> */}
-
       {/* ── CTA ── */}
       <section
         className="py-20 px-6 text-center"
@@ -290,15 +174,15 @@ export default function Slider() {
             Ready to begin?
           </h2>
           <p className="mb-8 text-base" style={{ color: '#226580' }}>
-            Set up your profile and start browsing allergen-free groceries, dining spaces, and recipes today.
+            Living allergen-free does not have to be stressful or anxiety-inducing. Set up your profile and start browsing allergen-free groceries, dining spaces, and recipes today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/search/groceries"
+              href="/products"
               className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
               style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
             >
-              Browse Groceries
+              Browse Allergen-Free Products
             </Link>
             <Link
               href="/recipes"
@@ -308,13 +192,16 @@ export default function Slider() {
               Discover Recipes
             </Link>
             <Link
-              href="/search/places"
+              href="/places"
               className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
               style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
             >
-              Browse Dining Areas
+              Browse Allergen-Free Places
             </Link>
           </div>
+          {/* <p className="mb-8 text-base" style={{ color: '#226580' }}>
+            Does not sell any data and is used for information purposes. Does not guarantee reducing cross-contamination risk. No app can do that.
+          </p> */}
         </div>
       </section>
     </div>

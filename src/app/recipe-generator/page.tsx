@@ -1,178 +1,400 @@
 "use client"
-import React from 'react'
-import Link from 'next/link'
-// import Filter from '@/components/Filter'
-// import { recipes, type Recipe } from '@/data'
 
-const global_categories = [
-  'Mexican/Latin American',
-  'Asian', 
-  'African',
-  'Thai',
-  'Middle Eastern', 
-  'Carribean', 
-  'European'
+import { useMemo, useState } from 'react'
+import { getProfile } from '@/lib/userprofile'
+
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack', 'dessert']
+
+const CULTURES = [
+  { id: 'south_asian', label: 'Indian', flag: '🍛' },
+  { id: 'japanese', label: 'Japanese', flag: '🍱' },
+  { id: 'mexican', label: 'Mexican', flag: '🌮' },
+  { id: 'southeast_asian', label: 'Thai', flag: '🍜' },
+  { id: 'ethiopian', label: 'Ethiopian', flag: '🌍' },
+  { id: 'middle_eastern', label: 'Middle Eastern', flag: '🌿' },
 ]
 
-export default function RecipesPage() {
-  // const [selectedFilters, setSelectedFilters] = React.useState<string[]>([])
-  // const [search, setSearch] = React.useState('')
-  // const [difficulty, setDifficulty] = React.useState<string | null>(null)
+const ALLERGEN_OPTIONS = [
+  { id: 'gluten', emoji: '🌾', label: 'Gluten' },
+  { id: 'peanut', emoji: '🥜', label: 'Peanuts' },
+  { id: 'tree-nut', emoji: '🌰', label: 'Tree nuts' },
+  { id: 'dairy', emoji: '🥛', label: 'Dairy' },
+  { id: 'egg', emoji: '🥚', label: 'Eggs' },
+  { id: 'soy', emoji: '🫘', label: 'Soy' },
+  { id: 'fish', emoji: '🐟', label: 'Fish' },
+  { id: 'shellfish', emoji: '🦐', label: 'Shellfish' },
+  { id: 'sesame', emoji: '⚪', label: 'Sesame' },
+]
 
-  // const filtered = React.useMemo(() => {
-  //   return recipes.filter((r: Recipe) => {
-  //     const searchOk = !search || r.name.toLowerCase().includes(search.toLowerCase())
-  //     const diffOk = !difficulty || r.difficulty === difficulty
-  //     const filterOk = selectedFilters.length === 0 || selectedFilters.every(f => r.dietaryTags.includes(f))
-  //     return searchOk && diffOk && filterOk
-  //   })
-  // }, [selectedFilters, search, difficulty])
+type RecipeIngredient = {
+  name: string
+  quantity: string
+  notes: string | null
+  optional: boolean
+}
+
+type Recipe = {
+  id: number
+  name: string
+  description: string
+  cultural_cuisine: string
+  meal_type: string
+  difficulty: string
+  prep_time_mins: number
+  cook_time_mins: number
+  servings: number
+  instructions: string
+  tips: string | null
+  emoji_icon: string | null
+  ingredients: RecipeIngredient[]
+}
+
+export default function RecipeCustomizerPage() {
+  const [avoid, setAvoid] = useState<string[]>(() => getProfile().allergens)
+  const [meal, setMeal] = useState<string | null>(null)
+  const [culture, setCulture] = useState<string | null>(null)
+  const [servings, setServings] = useState(2)
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null)
+
+  const selectedRecipe = useMemo(() => {
+    return recipes.find((recipe) => recipe.id === selectedRecipeId) ?? null
+  }, [recipes, selectedRecipeId])
+
+  const toggleAllergen = (id: string) => {
+    setAvoid((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
+  }
+
+  const findRecipes = async () => {
+    setLoading(true)
+    setError(null)
+    setSearched(true)
+
+    try {
+      const params = new URLSearchParams()
+      if (avoid.length) params.set('avoid', avoid.join(','))
+      if (meal) params.set('meal', meal)
+      if (culture) params.set('culture', culture)
+      params.set('servings', String(servings))
+
+      const res = await fetch(`/api/recipe-generator?${params.toString()}`)
+      if (!res.ok) throw new Error('Failed')
+
+      const json = await res.json()
+      const nextRecipes = json.data ?? []
+
+      setRecipes(nextRecipes)
+      setSelectedRecipeId(nextRecipes.length ? nextRecipes[0].id : null)
+    } catch {
+      setError('Could not load recipes. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* Page Header */}
-      <div style={{ backgroundColor: '#e2efef' }} className="px-6 lg:px-12 py-12">
-        <div className="max-w-7xl mx-auto rounded-3xl border border-border bg-card p-7">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#226580' }}>Recipe Customizer</p>
-          <h1 style={{ fontFamily: 'Fraunces, serif', fontWeight: 550, color: '#151b3a' }} className="text-2xl lg:text-5xl mb-3">
-            Generate from Verified Ingredients
-          </h1>
-          <label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">What do you have or want?</label>
-          <textarea
-                rows={4}
-                defaultValue="put in ingredients/products you have"
-                className="mt-2 w-full rounded-2xl border border-border bg-background p-4 text-sm outline-none focus:border-foreground"
-              />
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Cuisine</label>
-                  <select className="mt-2 w-full rounded-full border border-border bg-background px-4 py-2 text-sm">
-                    {global_categories.map((c) => <option key={c}>{c}</option>)}
-                  </select>
-                  {/* {global_categories.map((category) => (
-                    <button
-                        key={category.name}
-                        onClick={() => setSelectedCategory(category.name)}
-                        className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-                        style={selectedCategory === category.name
-                        ? { backgroundColor: '#1A3D2B', color: '#FAF7F0', borderColor: '#1A3D2B' }
-                        : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }
-                        }
-                    >
-                        {category.flag} {category.name}
-                    </button>
-                ))} */}
-            </div>
-            <div>
-                <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Meal</label>
-                <select className="mt-2 w-full rounded-full border border-border bg-background px-4 py-2 text-sm">
-                <option>Lunch</option><option>Dinner</option><option>Breakfast</option><option>Snack</option><option>Dessert</option>
-                </select>
+    <div className="page-shell min-h-screen">
+      <div className="page-header">
+        <div className="mx-auto max-w-6xl px-6 py-12 lg:px-10">
+          <p className="section-label">Recipe customizer</p>
+          <h1 className="section-title mt-3">The safe swap engine.</h1>
+          <p className="section-body mt-3 max-w-3xl">
+            Proven recipes from published cookbooks — not generated text. Pick your restrictions and
+            only verified recipes for your profile will appear.
+          </p>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-6 py-8 lg:px-10 lg:py-12">
+        <section className="surface-card p-6 lg:p-7">
+          <div className="mb-6">
+            <h2 className="text-base font-semibold" style={{ color: '#1A3D2B' }}>
+              1. What do you need to avoid?
+            </h2>
+            <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>
+              Select all that apply. Leaving this empty shows every recipe.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {ALLERGEN_OPTIONS.map((allergen) => {
+                const active = avoid.includes(allergen.id)
+                return (
+                  <button
+                    key={allergen.id}
+                    onClick={() => toggleAllergen(allergen.id)}
+                    className="rounded-full border px-4 py-2 text-sm font-semibold transition-all"
+                    style={
+                      active
+                        ? { backgroundColor: '#151b3a', color: '#faf7f0', borderColor: '#151b3a' }
+                        : { backgroundColor: '#ffffff', color: '#4a5568', borderColor: '#d1d5db' }
+                    }
+                  >
+                    {allergen.emoji} {allergen.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
-          <label className="mt-6 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Locked from your profile</label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {/* {LOCKED.map((a) => (
-                  <span key={a} className="inline-flex items-center gap-1.5 rounded-full bg-danger px-3 py-1.5 text-xs font-semibold text-danger-foreground">
-                    🔒 No {a}
-                  </span>
-                ))} */}
-              </div>
 
-              <button
-                // onClick={() => setGenerated(true)}
-                className="mt-7 w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                Generate from verified ingredients
-              </button>
-        </div>
-        <div className="flex h-full flex-col justify-center text-sm px-20">
-            <span className="rounded-full bg-muted py-1 text-xs font-semibold uppercase tracking-widest">Output</span>
-            <p className="mt-4 max-w-xl text-base">Your recipe will appear here. Every line item links back to a database entry so you can verify the source.</p>
-        </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <h2 className="text-base font-semibold" style={{ color: '#1A3D2B' }}>
+                2. Cuisine (optional)
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setCulture(null)}
+                  className="rounded-full border px-4 py-2 text-sm font-semibold transition-all"
+                  style={
+                    !culture
+                      ? { backgroundColor: '#151b3a', color: '#faf7f0', borderColor: '#151b3a' }
+                      : { backgroundColor: '#ffffff', color: '#4a5568', borderColor: '#d1d5db' }
+                  }
+                >
+                  Any cuisine
+                </button>
+
+                {CULTURES.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setCulture(option.id)}
+                    className="rounded-full border px-4 py-2 text-sm font-semibold transition-all"
+                    style={
+                      culture === option.id
+                        ? { backgroundColor: '#151b3a', color: '#faf7f0', borderColor: '#151b3a' }
+                        : { backgroundColor: '#ffffff', color: '#4a5568', borderColor: '#d1d5db' }
+                    }
+                  >
+                    {option.flag} {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-base font-semibold" style={{ color: '#1A3D2B' }}>
+                3. Meal type (optional)
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() => setMeal(null)}
+                  className="rounded-full border px-4 py-2 text-sm font-semibold transition-all"
+                  style={
+                    !meal
+                      ? { backgroundColor: '#151b3a', color: '#faf7f0', borderColor: '#151b3a' }
+                      : { backgroundColor: '#ffffff', color: '#4a5568', borderColor: '#d1d5db' }
+                  }
+                >
+                  Any meal
+                </button>
+
+                {MEAL_TYPES.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setMeal(option)}
+                    className="rounded-full border px-4 py-2 text-sm font-semibold capitalize transition-all"
+                    style={
+                      meal === option
+                        ? { backgroundColor: '#151b3a', color: '#faf7f0', borderColor: '#151b3a' }
+                        : { backgroundColor: '#ffffff', color: '#4a5568', borderColor: '#d1d5db' }
+                    }
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-base font-semibold" style={{ color: '#1A3D2B' }}>
+                4. Servings
+              </h2>
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={() => setServings((current) => Math.max(1, current - 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold"
+                  style={{ backgroundColor: '#ffffff', color: '#151b3a', borderColor: '#d1d5db' }}
+                >
+                  −
+                </button>
+                <span className="min-w-24 text-center text-lg font-semibold" style={{ color: '#151b3a' }}>
+                  {servings} {servings === 1 ? 'serving' : 'servings'}
+                </span>
+                <button
+                  onClick={() => setServings((current) => Math.min(12, current + 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border text-lg font-semibold"
+                  style={{ backgroundColor: '#ffffff', color: '#151b3a', borderColor: '#d1d5db' }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={findRecipes}
+              disabled={loading}
+              className="w-full rounded-full px-5 py-3 text-sm font-semibold transition-all lg:w-auto"
+              style={
+                loading
+                  ? { backgroundColor: '#9ca3af', color: '#ffffff', cursor: 'not-allowed' }
+                  : { backgroundColor: '#151b3a', color: '#faf7f0', cursor: 'pointer' }
+              }
+            >
+              {loading ? 'Finding safe recipes...' : 'Find my safe recipes →'}
+            </button>
+          </div>
+        </section>
+
+        {error && (
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium" style={{ color: '#991b1b' }}>
+            {error}
+          </div>
+        )}
+
+        {searched && !loading && recipes.length === 0 && !error && (
+          <div className="mt-6 rounded-3xl border border-dashed p-10 text-center" style={{ borderColor: '#d1d5db' }}>
+            <div className="mb-4 text-5xl">🔍</div>
+            <p className="text-lg font-semibold" style={{ color: '#151b3a' }}>
+              No recipes found for this combination
+            </p>
+            <p className="mt-2 text-sm" style={{ color: '#6b7280' }}>
+              Try removing some allergen restrictions or selecting a different cuisine.
+            </p>
+          </div>
+        )}
+
+        {recipes.length > 0 && (
+          <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr]">
+            <aside className="space-y-3">
+              {recipes.map((recipe) => (
+                <button
+                  key={recipe.id}
+                  onClick={() => setSelectedRecipeId(recipe.id)}
+                  className="w-full rounded-2xl border p-4 text-left transition-all"
+                  style={
+                    selectedRecipeId === recipe.id
+                      ? { borderColor: '#151b3a', backgroundColor: '#eef2ff' }
+                      : { borderColor: '#d1d5db', backgroundColor: '#ffffff' }
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{recipe.emoji_icon ?? '🍽️'}</span>
+                    <div>
+                      <h3 className="text-sm font-semibold" style={{ color: '#151b3a' }}>
+                        {recipe.name}
+                      </h3>
+                      <p className="mt-1 text-xs" style={{ color: '#6b7280' }}>
+                        {recipe.cultural_cuisine} · {recipe.meal_type}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </aside>
+
+            {selectedRecipe && <RecipeDetail recipe={selectedRecipe} />}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-// Old code from last week
-// "use client"
-// import React from 'react'
-// import Filter from '@/components/Filter'
-// import { recipes, type Recipe } from '@/data'
+function RecipeDetail({ recipe }: { recipe: Recipe }) {
+  return (
+    <section className="surface-card p-6 lg:p-7">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#226580' }}>
+        Verified recipe
+      </p>
+      <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-3xl font-semibold tracking-tight" style={{ color: '#151b3a' }}>
+            {recipe.name}
+          </h2>
+          <p className="mt-2 text-sm" style={{ color: '#6b7280' }}>
+            {recipe.cultural_cuisine} · {recipe.meal_type} · {recipe.servings} servings
+          </p>
+        </div>
+        <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ backgroundColor: '#d1fae5', color: '#065f46' }}>
+          ✓ Verified Safe
+        </span>
+      </div>
 
-// const RecipesPage = () => {
-//     const [selectedDiets] = React.useState<string[]>([])
+      <p className="mt-4 text-sm leading-6" style={{ color: '#4a5568' }}>
+        {recipe.description}
+      </p>
 
-//     const filteredRecipes = React.useMemo(() => {
-//         if (selectedDiets.length === 0) return recipes
-//         return recipes.filter((recipe: Recipe) =>
-//             selectedDiets.every(diet => recipe.dietaryTags.includes(diet))
-//         )
-//     }, [selectedDiets])
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          ['⏱', 'Prep', `${recipe.prep_time_mins ?? '?'} min`],
+          ['🔥', 'Cook', `${recipe.cook_time_mins ?? '?'} min`],
+          ['🍽️', 'Servings', String(recipe.servings)],
+          ['📊', 'Difficulty', recipe.difficulty],
+        ].map(([icon, label, value]) => (
+          <div key={label} className="rounded-2xl p-3 text-center" style={{ backgroundColor: '#f9fafb' }}>
+            <div className="text-sm">{icon}</div>
+            <div className="mt-1 text-[11px] uppercase tracking-wide" style={{ color: '#9ca3af' }}>
+              {label}
+            </div>
+            <div className="mt-1 text-sm font-semibold" style={{ color: '#151b3a' }}>
+              {value}
+            </div>
+          </div>
+        ))}
+      </div>
 
-//     return (
-//         <div className="p-4 lg:px-20 xl:px-40">
-//             <div className="flex flex-col md:flex-row gap-8">
-//                 <div className="w-full md:w-1/4">
-//                     <Filter />
-//                 </div>
+      <div className="mt-8">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#226580' }}>
+          Ingredients
+        </h3>
+        <ul className="mt-3 space-y-2 text-sm">
+          {recipe.ingredients.map((ingredient, index) => (
+            <li key={`${ingredient.name}-${index}`} className="flex items-start gap-3 rounded-xl px-2 py-2" style={{ backgroundColor: '#f9fafb' }}>
+              <span className="mt-2 h-2.5 w-2.5 rounded-full" style={{ backgroundColor: '#e8a020', flexShrink: 0 }} />
+              <span style={{ color: '#374151' }}>
+                <strong style={{ color: '#151b3a' }}>{ingredient.quantity}</strong>{' '}
+                {ingredient.name}
+                {ingredient.notes && <span style={{ color: '#9ca3af' }}> — {ingredient.notes}</span>}
+                {ingredient.optional && <span style={{ color: '#9ca3af' }}> (optional)</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-//                 <div className="w-full md:w-3/4">
-//                     <h1 className="text-3xl font-bold mb-6">Recipes</h1>
-//                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-//                         {filteredRecipes.map((recipe: Recipe) => (
-//                             <div key={recipe.id} className="border rounded-lg overflow-hidden hover:shadow-lg transition">
-//                                 <div className="bg-gray-100 p-6 text-5xl text-center">{recipe.image}</div>
-//                                 <div className="p-4">
-//                                     <h3 className="font-bold text-lg mb-2">{recipe.name}</h3>
-//                                     <p className="text-sm text-gray-600 mb-3">{recipe.description}</p>
-                                    
-//                                     <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-//                                         <div>
-//                                             <p className="text-gray-500">Cook Time</p>
-//                                             <p className="font-semibold">{recipe.cookTime} min</p>
-//                                         </div>
-//                                         <div>
-//                                             <p className="text-gray-500">Servings</p>
-//                                             <p className="font-semibold">{recipe.servings}</p>
-//                                         </div>
-//                                         <div>
-//                                             <p className="text-gray-500">Difficulty</p>
-//                                             <p className="font-semibold">{recipe.difficulty}</p>
-//                                         </div>
-//                                     </div>
+      <div className="mt-8">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#226580' }}>
+          Method
+        </h3>
+        <ol className="mt-3 space-y-3 text-sm">
+          {recipe.instructions.split('\n').filter((line) => line.trim()).map((step, index) => (
+            <li key={`${step}-${index}`} className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold" style={{ backgroundColor: '#e2efef', color: '#151b3a' }}>
+                {index + 1}
+              </span>
+              <span style={{ color: '#374151' }}>{step.replace(/^\d+\.\s*/, '')}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
 
-//                                     <div className="mb-3">
-//                                         <p className="text-xs font-semibold text-gray-500 mb-2">Tags:</p>
-//                                         <div className="flex flex-wrap gap-1">
-//                                             {recipe.dietaryTags.map((tag: string) => (
-//                                                 <span key={tag} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-//                                                     {tag}
-//                                                 </span>
-//                                             ))}
-//                                         </div>
-//                                     </div>
+      {recipe.tips && (
+        <div className="mt-8 rounded-2xl border-l-4 p-4" style={{ backgroundColor: '#fef3c7', borderColor: '#e8a020' }}>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#92400e' }}>
+            Chef&apos;s tip
+          </p>
+          <p className="mt-2 text-sm" style={{ color: '#78350f' }}>
+            {recipe.tips}
+          </p>
+        </div>
+      )}
+    </section>
+  )
+}
 
-//                                     <div>
-//                                         <p className="text-xs font-semibold text-gray-500 mb-2">Ingredients:</p>
-//                                         <ul className="text-sm list-disc list-inside text-gray-700">
-//                                             {recipe.ingredients.slice(0, 3).map((ing: string, idx: number) => (
-//                                                 <li key={idx}>{ing}</li>
-//                                             ))}
-//                                             {recipe.ingredients.length > 3 && (
-//                                                 <li>+{recipe.ingredients.length - 3} more</li>
-//                                             )}
-//                                         </ul>
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         ))}
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
-
-// export default RecipesPage

@@ -22,8 +22,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#e2efef',
-      fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="page-shell" style={{ minHeight: '100vh' }}>
 
       {/* Progress bar */}
       <div style={{ backgroundColor: '#e2efef', padding: '1.25rem 1.5rem' }}>

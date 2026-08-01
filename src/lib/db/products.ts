@@ -9,6 +9,7 @@ export type ProductFilters = {
   isDedicated?:       boolean
   isCertified?:       boolean
   knowBeforeYouBuy?:  string
+  whereToBuy?:        string
 }
 
 export async function getProducts(filters: ProductFilters) {
@@ -22,6 +23,8 @@ export async function getProducts(filters: ProductFilters) {
     conditions.push(ilike(products.culturalCuisine, `%${filters.culturalCuisine}%`))
   if (filters.knowBeforeYouBuy)
     conditions.push(ilike(products.knowBeforeYouBuy, `%${filters.knowBeforeYouBuy}%`))
+  if (filters.whereToBuy)
+    conditions.push(ilike(products.whereToBuy, `%${filters.whereToBuy}%`))
 
   return db
     .select()

@@ -11,13 +11,13 @@ export default function ProfilePage() {
   }, [])
 
   return (
-    <div style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }} className="min-h-screen bg-gray-300 pt-20 text-gray-900">
+    <div className="page-shell min-h-screen pt-20">
       <section className="mx-auto flex max-w-4xl flex-col gap-12 px-6">
         <div className="text-center">
-          <h1 className="text-4xl font-bold">Your profile</h1>
+          <h1 className="section-title">Your profile</h1>
         </div>
 
-        <div style={{ backgroundColor: '#FAF7F0' }} className="rounded-2xl border bg-card p-5 text-left transition shadow-md">
+        <div className="surface-card p-5 text-left transition">
           <h2 className="mb-4 text-2xl font-semibold">About Me</h2>
           <p className="text-sm text-gray-600">
             Your onboarding choices are saved here and used to filter dining and grocery options.

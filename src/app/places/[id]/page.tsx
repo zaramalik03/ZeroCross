@@ -48,7 +48,7 @@ type PlaceDetail = {
   writtenAllergenMenu:  boolean | null
   knowBeforeYouGo:      string | null
   freeOf:               string[]
-  contains:             string[]
+  canAccommodate:       string[]
   mayContain:           string[]
   dietTags:             string[]
 }
@@ -82,23 +82,18 @@ export default function PlaceDetailPage() {
   }, [params.id])
 
   if (loading) return (
-    <div style={{ backgroundColor: '#FAF7F0', minHeight: '100vh',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <p style={{ color: '#6B7280' }}>Loading...</p>
+    <div className="page-shell min-h-screen flex items-center justify-center">
+      <p className="text-sm" style={{ color: '#6B7280' }}>Loading...</p>
     </div>
   )
 
   if (error || !place) return (
-    <div style={{ backgroundColor: '#FAF7F0', minHeight: '100vh',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <p style={{ color: '#991B1B', marginBottom: 16 }}>
+    <div className="page-shell min-h-screen flex flex-col items-center justify-center gap-4">
+      <p className="text-sm font-semibold" style={{ color: '#991B1B' }}>
         {error ?? 'Place not found'}
       </p>
-      <Link href="/dining"
-        style={{ color: '#1A3D2B', fontWeight: 600, fontSize: 14 }}>
-        ← Back to dining
+      <Link href="/places" className="text-sm font-semibold" style={{ color: '#1A3D2B' }}>
+        ← Back to places
       </Link>
     </div>
   )
@@ -106,29 +101,24 @@ export default function PlaceDetailPage() {
   const rankMeta = place.ranking ? RANKING_META[place.ranking] : null
 
   return (
-    <div style={{ backgroundColor: '#FAF7F0', minHeight: '100vh',
-      fontFamily: 'Inter, system-ui, sans-serif' }}>
-
-      {/* Back button */}
-      <div style={{ backgroundColor: '#1A3D2B', padding: '1rem 2rem' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+    <div className="page-shell min-h-screen">
+      <div className="page-header px-6 lg:px-12 py-4">
+        <div className="max-w-4xl mx-auto">
           <button
             onClick={() => router.back()}
-            style={{ background: 'none', border: 'none', cursor: 'pointer',
-              color: '#A7C4B5', fontSize: 13, padding: 0,
-              display: 'flex', alignItems: 'center', gap: 6 }}
+            className="text-sm font-semibold"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#226580', padding: 0 }}
           >
             ← Back
           </button>
         </div>
       </div>
 
-      {/* Hero */}
-      <div style={{ backgroundColor: '#1A3D2B', padding: '2rem 2rem 3rem' }}>
+      <div style={{ backgroundColor: '#151b3a', padding: '2rem 2rem 3rem' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
 
           {/* Category + verified */}
-          <div style={{ display: 'flex', alignItems: 'center',
+          {/* <div style={{ display: 'flex', alignItems: 'center',
             gap: 8, marginBottom: 12 }}>
             {place.category && (
               <span style={{ fontSize: 12, color: '#A7C4B5',
@@ -143,7 +133,7 @@ export default function PlaceDetailPage() {
                 ✓ ZeroCross Verified
               </span>
             )}
-          </div>
+          </div> */}
 
           {/* Name */}
           <h1 style={{ color: '#FAF7F0', fontSize: 30, margin: '0 0 6px',
@@ -174,16 +164,12 @@ export default function PlaceDetailPage() {
         </div>
       </div>
 
-      {/* Body */}
-      <div style={{ maxWidth: 800, margin: '0 auto',
-        padding: '2rem', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '2rem', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Description */}
         {place.description && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16,
-            padding: '1.5rem', border: '1px solid #E5E7EB' }}>
-            <p style={{ fontSize: 15, color: '#374151',
-              lineHeight: 1.7, margin: 0 }}>
+          <div className="surface-card p-6">
+            <p className="text-[15px] leading-7 m-0" style={{ color: '#374151' }}>
               {place.description}
             </p>
           </div>
@@ -207,18 +193,15 @@ export default function PlaceDetailPage() {
         )}
 
         {/* Allergen status */}
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16,
-          padding: '1.5rem', border: '1px solid #E5E7EB' }}>
-          <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B',
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            margin: '0 0 16px' }}>
+        <div className="surface-card p-6">
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 16px' }}>
             Allergen Information
           </h2>
 
           {place.freeOf.length > 0 && (
             <div style={{ marginBottom: 14 }}>
               <p style={{ fontSize: 12, fontWeight: 600, color: '#065F46',
-                margin: '0 0 8px' }}>Confirmed free of</p>
+                margin: '0 0 8px' }}>Free of</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {place.freeOf.map(a => (
                   <span key={a} style={{ fontSize: 12, padding: '4px 10px',
@@ -230,7 +213,21 @@ export default function PlaceDetailPage() {
               </div>
             </div>
           )}
-
+          {place.canAccommodate.length > 0 && (
+            <div>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#8faa22',
+                margin: '0 0 8px' }}>Can Accommodate For</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {place.canAccommodate.map(a => (
+                  <span key={a} style={{ fontSize: 12, padding: '4px 10px',
+                    borderRadius: 99, backgroundColor: '#e2ff9f',
+                    color: '#8faa22', fontWeight: 500 }}>
+                    ✓ {a}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           {place.mayContain.length > 0 && (
             <div style={{ marginBottom: 14 }}>
               <p style={{ fontSize: 12, fontWeight: 600, color: '#92400E',
@@ -246,30 +243,11 @@ export default function PlaceDetailPage() {
               </div>
             </div>
           )}
-
-          {place.contains.length > 0 && (
-            <div>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#991B1B',
-                margin: '0 0 8px' }}>Confirmed contains</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {place.contains.map(a => (
-                  <span key={a} style={{ fontSize: 12, padding: '4px 10px',
-                    borderRadius: 99, backgroundColor: '#FEE2E2',
-                    color: '#991B1B', fontWeight: 500 }}>
-                    ✗ {a}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Safety flags */}
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16,
-          padding: '1.5rem', border: '1px solid #E5E7EB' }}>
-          <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B',
-            textTransform: 'uppercase', letterSpacing: '0.06em',
-            margin: '0 0 16px' }}>
+        <div className="surface-card p-6">
+          <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 16px' }}>
             Safety Details
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -307,11 +285,8 @@ export default function PlaceDetailPage() {
 
         {/* Diet tags */}
         {place.dietTags.length > 0 && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16,
-            padding: '1.5rem', border: '1px solid #E5E7EB' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              margin: '0 0 12px' }}>
+          <div className="surface-card p-6">
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: '#1A3D2B', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>
               Dietary Options
             </h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -345,16 +320,14 @@ export default function PlaceDetailPage() {
 
         {/* Contact */}
         {(place.website || place.phone) && (
-          <div style={{ backgroundColor: '#FFFFFF', borderRadius: 16,
-            padding: '1.5rem', border: '1px solid #E5E7EB',
-            display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <div className="surface-card p-6" style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {place.website && (
               <a href={place.website} target="_blank" rel="noopener noreferrer"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
                   fontSize: 14, fontWeight: 500, color: '#1A3D2B',
                   textDecoration: 'none',
                   padding: '8px 16px', borderRadius: 99,
-                  backgroundColor: '#1A3D2B', color: '#FAF7F0' }}>
+                  backgroundColor: '#ffffff' }}>
                 Visit website →
               </a>
             )}
@@ -373,10 +346,8 @@ export default function PlaceDetailPage() {
 
         {/* Back link */}
         <div style={{ paddingTop: 8, paddingBottom: 32 }}>
-          <Link href="/dining"
-            style={{ fontSize: 14, color: '#6B7280',
-              textDecoration: 'none', fontWeight: 500 }}>
-            ← Back to all dining spots
+          <Link href="/places" className="text-sm font-semibold" style={{ color: '#6B7280', textDecoration: 'none' }}>
+            ← Back to all places
           </Link>
         </div>
       </div>

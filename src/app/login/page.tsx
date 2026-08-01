@@ -9,8 +9,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex"
-      style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }}
+      className="page-shell min-h-screen flex"
     >
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">

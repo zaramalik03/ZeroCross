@@ -1,63 +1,82 @@
 // src/lib/db/schema.ts
 import {
   pgTable, pgEnum, text, boolean, numeric,
-  integer, timestamp, date, jsonb, index
+  integer, varchar, timestamp, date, jsonb, uniqueIndex, index,
+  primaryKey
 } from 'drizzle-orm/pg-core'
-import { sql } from 'drizzle-orm'
+import { sql, relations } from 'drizzle-orm'
 
 // ── Enums ──────────────────────────────────────────────────
-export const listingTypeEnum = pgEnum('listing_type', [
-  'restaurant', 'bakery', 'cafe', 'food_truck',
-  'convenience_store', 'grocery_store', 'health_food_store',
-  'catering', 'farmers_market', 'college_dining', 'hotel_kitchen'
+export const cuisineRegionEnum = pgEnum('cuisine_region_type', [
+  'american',
+  'southern_us',
+  'japanese',
+  'korean',
+  'chinese',
+  'southeast_asian',
+  'south_asian',
+  'middle_eastern',
+  'mediterranean',
+  'mexican',
+  'latin_american',
+  'ethiopian',
+  'west_african',
+  'caribbean',
+  'french',
+  'italian',
+  'fusion',
+  'global',
 ])
 
-export const ccRiskEnum = pgEnum('cc_risk', [
-  'none', 'low', 'moderate', 'high', 'unknown'
+export const listingTypeEnum = pgEnum('listing_type', [
+  'restaurant',
+  'bakery',
+  'cafe',
+  'food_truck',
+  'convenience_store',
+  'grocery_store',
+  'health_food_store',
+  'catering',
+  'farmers_market',
+  'college_dining',
+  'hotel_kitchen',
+])
+ 
+export const restrictionTypeEnum = pgEnum('restriction_type', [
+  'intolerance',
+  'allergy',
+  'preference',
+  'medical',
 ])
 
 export const verifiedByEnum = pgEnum('verified_by_type', [
-  'community', 'self_reported', 'third_party'
+  'community', 'self_reported', 'third_party',
 ])
 
-// ── Shared allergen columns (reused across tables) ─────────
-// const allergenColumns = {
-//   freeOfGluten:    boolean('free_of_gluten'),
-//   freeOfWheat:     boolean('free_of_wheat'),
-//   freeOfPeanut:    boolean('free_of_peanut'),
-//   freeOfTreeNut:   boolean('free_of_tree_nut'),
-//   freeOfDairy:     boolean('free_of_dairy'),
-//   freeOfEgg:       boolean('free_of_egg'),
-//   freeOfSoy:       boolean('free_of_soy'),
-//   freeOfFish:      boolean('free_of_fish'),
-//   freeOfShellfish: boolean('free_of_shellfish'),
-//   freeOfSesame:    boolean('free_of_sesame'),
-//   freeOfMustard:   boolean('free_of_mustard'),
-//   freeOfCelery:    boolean('free_of_celery'),
-//   freeOfLupin:     boolean('free_of_lupin'),
-//   freeOfSulphites: boolean('free_of_sulphites'),
-//   freeOfCorn:      boolean('free_of_corn'),
-// }
+// ── users ─────────────────────────────────────────────────
+export const users = pgTable('users', {
+  id:        integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  name:      varchar('name',  { length: 255 }).notNull(),
+  email:     varchar('email', { length: 255 }).notNull().unique(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
-// const dietColumns = {
-//   dietVegan:       boolean('diet_vegan').default(false),
-//   dietVegetarian:  boolean('diet_vegetarian').default(false),
-//   dietPaleo:       boolean('diet_paleo').default(false),
-//   dietKeto:        boolean('diet_keto').default(false),
-//   dietKosher:      boolean('diet_kosher').default(false),
-//   dietHalal:       boolean('diet_halal').default(false),
-//   dietLowFodmap:   boolean('diet_low_fodmap').default(false),
-// }
+// ── allergens ─────────────────────────────────────────────
+// category: 'fda_top9' | 'eu_14' | 'extended'
+export const allergens = pgTable('allergens', {
+  id:       integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  name:     varchar('name',     { length: 201 }).notNull().unique(),
+  category: varchar('category', { length: 170 }),
+})
 
-// const auditColumns = {
-//   lastVerifiedDate: date('last_verified_date'),
-//   verifiedBy:       verifiedByEnum('verified_by').default('community'),
-//   isActive:         boolean('is_active').default(true),
-//   dateAdded:        timestamp('date_added').defaultNow(),
-//   updatedAt:        timestamp('updated_at').defaultNow(),
-// }
+// ── diets ─────────────────────────────────────────────────
+export const diets = pgTable('diets', {
+  id:   integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  name: varchar('name', { length: 100 }).notNull().unique(),
+  tag:  varchar('tag',  { length: 100 }),
+})
 
-// ── TABLE: dining_areas ────────────────────────────────────
+// ── places ────────────────────────────────────
 export const places = pgTable('places', {
   id:                   text('id').primaryKey(),
   name:                 text('name').notNull(),
@@ -78,48 +97,106 @@ export const places = pgTable('places', {
   isCertified:          boolean('is_certified'),
   trainedStaff:         boolean('trained_staff'),
   writtenAllergenMenu:  boolean('written_allergen_menu'),
-  // ...allergenColumns,
-  // ...dietColumns,
-  // ...auditColumns,
   knowBeforeYouGo:   text('know_before_you_go'),
   createdAt:            timestamp('created_at').defaultNow(),
   updatedAt:            timestamp('updated_at').defaultNow(),
 }, (table) => ({
-  cityIdx:       index('idx_da_city').on(table.city),
-  stateIdx:      index('idx_da_state').on(table.state),
-  // glutenIdx:     index('idx_da_gluten').on(table.freeOfGluten),
-  // peanutIdx:     index('idx_da_peanut').on(table.freeOfPeanut),
-  // treeNutIdx:    index('idx_da_tree_nut').on(table.freeOfTreeNut),
-  dedicatedIdx:  index('idx_da_dedicated').on(table.isDedicatedFacility),
+  cityIdx:      index('idx_places_city').on(table.city),
+  stateIdx:     index('idx_places_state').on(table.state),
+  rankingIdx:   index('idx_places_ranking').on(table.ranking),
+  dedicatedIdx: index('idx_places_dedicated').on(table.isDedicatedFacility),
+  certifiedIdx: index('idx_places_certified').on(table.isCertified),
+  verifiedIdx:  index('idx_places_verified').on(table.verified),
+  activeIdx:    index('idx_places_active').on(table.active),
 }))
 
-// ── TABLE: grocery_products ────────────────────────────────
+// ── junction table: places_allergens ────────────────────────────
+// status: 'free_of' | 'contains' | 'may_contain' | 'unknown'
+export const placesAllergens = pgTable('places_allergens', {
+  id:         integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  placeId:    integer('place_id')
+                .notNull()
+                .references(() => places.id, { onDelete: 'cascade' }),
+  allergenId: integer('allergen_id')
+                .notNull()
+                .references(() => allergens.id, { onDelete: 'cascade' }),
+  status:     varchar('status', { length: 50 }).notNull().default('unknown'),
+}, (table) => ({
+  uniquePlaceAllergen: uniqueIndex('uniq_place_allergen').on(table.placeId, table.allergenId),
+  placeIdx:            index('idx_pa_place').on(table.placeId, table.allergenId),
+  statusIdx:           index('idx_pa_status').on(table.status),
+}))
+
+// ── junction table: places_diets ────────────────────────────────
+export const placesDiets = pgTable('places_diets', {
+  placeId: integer('place_id')
+             .notNull()
+             .references(() => places.id, { onDelete: 'cascade' }),
+  dietId:  integer('diet_id')
+             .notNull()
+             .references(() => diets.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.placeId, table.dietId] }),
+}))
+
+// ── products ────────────────────────────────
 export const products = pgTable('products', {
   id:                  text('id').primaryKey(),
   name:                text('name').notNull(),
   brandName:           text('brand_name').notNull(),
   category:            text('category').notNull(),
   culturalCuisine:     text('cultural_cuisine'),
-  description:          text('description'),
-  verified:             boolean('verified'),
-  active:               boolean('active'),
-  ranking:              integer('ranking'),
+  description:         text('description'),
+  verified:            boolean('verified'),
+  active:              boolean('active'),
+  ranking:             integer('ranking'),
   isDedicatedFacility: boolean('is_dedicated_facility').notNull(),
   isCertified:         boolean('is_certified').notNull(),
-  trainedStaff:         boolean('trained_staff'),
-  // ...allergenColumns,
-  // ...dietColumns,
   knowBeforeYouBuy:    text('know_before_you_buy'),
   whereToBuy:          text('where_to_buy'),
-  // ...auditColumns,
   createdAt:            timestamp('created_at').defaultNow(),
   updatedAt:            timestamp('updated_at').defaultNow(),
 }, (table) => ({
-  categoryIdx:   index('idx_gp_category').on(table.category),
-  // glutenIdx:     index('idx_gp_gluten').on(table.freeOfGluten),
+  categoryIdx:  index('idx_product_category').on(table.category),
+  culturalIdx:  index('idx_product_cultural').on(table.culturalCuisine),
+  certifiedIdx: index('idx_product_certified').on(table.isCertified),
+  verifiedIdx: index('idx_product_verified').on(table.verified),
+  activeIdx:   index('idx_product_active').on(table.active),
+  // recipesIdx:   index('idx_product_recipes').on(table.usedInRecipes),
+  // barcodeIdx:   index('idx_product_barcode').on(table.barcode),
 }))
 
-// ── TABLE: ingredients ─────────────────────────────────────
+// ── junction table: product_allergens ───────────────────────────
+// status: 'free_of' | 'contains' | 'may_contain' | 'unknown'
+export const productAllergens = pgTable('product_allergens', {
+  id:         integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  productId:  integer('product_id')
+                .notNull()
+                .references(() => products.id, { onDelete: 'cascade' }),
+  allergenId: integer('allergen_id')
+                .notNull()
+                .references(() => allergens.id, { onDelete: 'cascade' }),
+  status:     varchar('status', { length: 50 }).notNull().default('unknown'),
+  order:      integer('order_'),
+}, (table) => ({
+  uniqueProductAllergen: uniqueIndex('uniq_product_allergen').on(table.productId, table.allergenId),
+  statusIdx:             index('idx_product_allergen_status').on(table.status),
+}))
+
+// ── junction table: product_ingredients ─────────────────────────
+export const productIngredients = pgTable('product_ingredients', {
+  productId:    integer('product_id')
+                  .notNull()
+                  .references(() => products.id, { onDelete: 'cascade' }),
+  ingredientId: integer('ingredient_id')
+                  .notNull()
+                  .references(() => ingredients.id, { onDelete: 'cascade' }),
+  order:        integer('order_'),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.productId, table.ingredientId] }),
+}))
+
+// ── ingredients ─────────────────────────────────────
 export const ingredients = pgTable('ingredients', {
   id:                  text('id').primaryKey(),
   name:                text('name').notNull(),
@@ -128,26 +205,87 @@ export const ingredients = pgTable('ingredients', {
   verified:             boolean('verified'),
   active:               boolean('active'),
   ranking:              integer('ranking'),
-  // ...allergenColumns,
   createdAt:           timestamp('created_at').defaultNow(),
   updatedAt:           timestamp('updated_at').defaultNow(),
-})
+}, (table) => ({
+  typeIdx:     index('idx_ingredients_type').on(table.type),
+  cultureIdx:  index('idx_ingredients_culture').on(table.cuisineCulture),
+  verifiedIdx: index('idx_ingredients_verified').on(table.verified),
+  activeIdx:   index('idx_ingredients_active').on(table.active),
+}))
 
-// // ── TABLE: listing_staging ─────────────────────────────────
-// export const listingStaging = pgTable('listing_staging', {
-//   id:            text('id').primaryKey(),
-//   source:        text('source').notNull(),
-//   rawData:       jsonb('raw_data').notNull(),
-//   aiAnalysis:    jsonb('ai_analysis'),
-//   confidence:    text('confidence'),
-//   status:        text('status').default('pending'),
-//   reviewerNotes: text('reviewer_notes'),
-//   discoveredAt:  timestamp('discovered_at').defaultNow(),
-//   reviewedAt:    timestamp('reviewed_at'),
-// })
+// ── junction ta table: ingredient_allergens ────────────────────────
+// status: 'free_of' | 'contains' | 'may_contain' | 'unknown'
+export const ingredientAllergens = pgTable('ingredient_allergens', {
+  id:           integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  ingredientId: integer('ingredient_id')
+                  .notNull()
+                  .references(() => ingredients.id, { onDelete: 'cascade' }),
+  allergenId:   integer('allergen_id')
+                  .notNull()
+                  .references(() => allergens.id, { onDelete: 'cascade' }),
+  status:       varchar('status', { length: 50 }).notNull().default('unknown'),
+}, (table) => ({
+  uniqueIngAllergen: uniqueIndex('uniq_ing_allergen').on(table.ingredientId, table.allergenId),
+  statusIdx:         index('idx_ia_status').on(table.status),
+}))
+ 
+// ── junction table: ingredient_diets ────────────────────────────
+export const ingredientDiets = pgTable('ingredient_diets', {
+  ingredientId: integer('ingredient_id')
+                  .notNull()
+                  .references(() => ingredients.id, { onDelete: 'cascade' }),
+  dietId:       integer('diet_id')
+                  .notNull()
+                  .references(() => diets.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.ingredientId, table.dietId] }),
+}))
 
-// ── Types (auto-generated from schema) ────────────────────
-export type DiningArea       = typeof places.$inferSelect
-export type NewDiningArea    = typeof places.$inferInsert
-export type Product          = typeof products.$inferSelect
-// export type Ingredient       = typeof ingredients.$inferSelect
+// ── recipes ────────────────────────
+export const recipes = pgTable('recipes', {
+  id:             integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  name:           varchar('name', { length: 255 }).notNull(),
+  description:    text('description'),
+  culturalCuisine: varchar('cultural_cuisine', { length: 255 }),
+  culturalType:   cuisineRegionEnum('cultural_type'),
+  mealType:       varchar('meal_type', { length: 50 }),
+  difficulty:     varchar('difficulty', { length: 20 }).default('Easy'),
+  prepTimeMins:   integer('prep_time_mins'),
+  cookTimeMins:   integer('cook_time_mins'),
+  servings:       integer('servings').default(2),
+  instructions:   text('instructions').notNull(),
+  tips:           text('tips'),
+  active:         boolean('active').default(true),
+  createdAt:      timestamp('created_at', { withTimezone: true }).defaultNow(),
+}, (table) => ({
+  culturalIdx: index('idx_recipes_cultural').on(table.culturalType),
+  mealIdx:     index('idx_recipes_meal').on(table.mealType),
+  activeIdx:   index('idx_recipes_active').on(table.active),
+}))
+
+export type Place            = typeof places.$inferSelect
+export type NewPlace         = typeof places.$inferInsert
+export type PlaceAllergen    = typeof placesAllergens.$inferSelect
+export type NewPlaceAllergen = typeof placesAllergens.$inferInsert
+export type PlaceDiet        = typeof placesDiets.$inferSelect
+export type GroceryProduct          = typeof products.$inferSelect
+export type NewGroceryProduct       = typeof products.$inferInsert
+export type ProductAllergen         = typeof productAllergens.$inferSelect
+export type Ingredient              = typeof ingredients.$inferSelect
+export type NewIngredient           = typeof ingredients.$inferInsert
+export type IngredientAllergen      = typeof ingredientAllergens.$inferSelect
+export type Recipe                  = typeof recipes.$inferSelect
+export type NewRecipe               = typeof recipes.$inferInsert
+// export type RecipeIngredient        = typeof recipeIngredients.$inferSelect
+// export type NewRecipeIngredient     = typeof recipeIngredients.$inferInsert
+export type Allergen                = typeof allergens.$inferSelect
+export type NewAllergen             = typeof allergens.$inferInsert
+export type Diet                    = typeof diets.$inferSelect
+// export type Store                   = typeof stores.$inferSelect
+// export type Certification           = typeof certifications.$inferSelect
+export type User                    = typeof users.$inferSelect
+// export type DietaryProfile          = typeof dietaryProfiles.$inferSelect
+// export type NewDietaryProfile       = typeof dietaryProfiles.$inferInsert
+// export type ProfileRestriction      = typeof profileRestrictions.$inferSelect
+// export type NewProfileRestriction   = typeof profileRestrictions.$inferInsert

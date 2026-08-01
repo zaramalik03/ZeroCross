@@ -25,26 +25,24 @@ export default function RecipesPage() {
   // }, [selectedFilters, search, difficulty])
 
   return (
-    <div style={{ backgroundColor: '#e2efef', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* Page Header */}
-      <div style={{ backgroundColor: '#e2efef' }} className="px-6 lg:px-12 py-12">
+    <div className="page-shell">
+      <div className="page-header px-6 lg:px-12 py-12">
         <div className="max-w-7xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#226580' }}>Recipes</p>
-          <h1 style={{ fontFamily: 'Fraunces, serif', fontWeight: 550, color: '#151b3a' }} className="text-4xl lg:text-5xl mb-3">
-            Recipes Page Coming Soon
-          </h1>
-          <p style={{ color: '#151b3a' }} className="text-base max-w-xl">
+          <p className="section-label mb-2">Recipes</p>
+          <h1 className="section-title mb-3">Recipes Page Coming Soon</h1>
+          <p className="section-body max-w-xl">
             Recipes developed in certified allergen-free production spaces — spanning multiple flavors of cuisines.
             Check out our personalized recipe generator today!
           </p>
         </div>
-        <div style={{ backgroundColor: '#e2efef' }} className="px-8 py-8">
-            <Link 
-              href="/recipe-generator"
-              className="px-8 py-4 rounded-full font-semibold text-sm transition-all duration-200"
-              style={{ backgroundColor: '#151b3a', color: '#ffffff' }}
-              >Click here</Link>
-          </div>
+        <div className="max-w-7xl mx-auto px-0 pt-8">
+          <Link
+            href="/recipe-generator"
+            className="primary-button"
+          >
+            Click here
+          </Link>
+        </div>
       </div>
 
       {/* <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10"> */}

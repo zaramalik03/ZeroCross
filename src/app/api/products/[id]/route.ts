@@ -1,16 +1,13 @@
-// src/app/api/places/[id]/route.ts
+// src/app/api/products/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { db }     from '@/lib/db'
-import { places, placesAllergens, placesDiets,
-         allergens, diets } from '@/lib/db/schema'
+import { products, productAllergens, allergens } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
 export async function GET(
   req: NextRequest,
-  // { params }: { params: { id: string } }
    { params }: { params: Promise<{ id: string }> }
 ) {
-  // const id = parseInt(params.id)
   const { id: rawId } = await params
   const id = parseInt(rawId)
 
@@ -25,8 +22,8 @@ export async function GET(
     // Get the place
     const [place] = await db
       .select()
-      .from(places)
-      .where(eq(places.id, id))
+      .from(products)
+      .where(eq(products.id, id))
       .limit(1)
 
     if (!place) {
@@ -40,32 +37,24 @@ export async function GET(
     const allergenRows = await db
       .select({
         name:   allergens.name,
-        status: placesAllergens.status,
+        status: productAllergens.status,
       })
-      .from(placesAllergens)
-      .innerJoin(allergens, eq(placesAllergens.allergenId, allergens.id))
-      .where(eq(placesAllergens.placeId, id))
+      .from(productAllergens)
+      .innerJoin(allergens, eq(productAllergens.allergenId, allergens.id))
+      .where(eq(productAllergens.productId, id))
       .orderBy(allergens.name)
-
-    // Get diet tags
-    const dietRows = await db
-      .select({ name: diets.name, tag: diets.tag })
-      .from(placesDiets)
-      .innerJoin(diets, eq(placesDiets.dietId, diets.id))
-      .where(eq(placesDiets.placeId, id))
 
     // Group allergens by status
     const freeOf    = allergenRows.filter(a => a.status === 'free_from').map(a => a.name)
     const canAccommodate  = allergenRows.filter(a => a.status === 'can_accommodate').map(a => a.name)
     const mayContain = allergenRows.filter(a => a.status === 'may_contain').map(a => a.name)
-    const dietTags  = dietRows.map(d => d.tag ?? d.name)
 
     return NextResponse.json({
-      data: { ...place, freeOf, canAccommodate, mayContain, dietTags }
+      data: { ...place, freeOf, canAccommodate, mayContain }
     })
 
   } catch (err) {
-    console.error('[/api/places/[id]]', err)
+    console.error('[/api/products/[id]]', err)
     return NextResponse.json(
       { error: 'Failed to load place' },
       { status: 500 }
