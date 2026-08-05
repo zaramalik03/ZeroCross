@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       { headers: { 'Cache-Control': 'public, s-maxage=300' } }
     )
   } catch (err) {
-    console.error('[/api/groceries]', err)
+    console.error('[/api/ingredients]', err)
     return NextResponse.json(
       { error: 'Failed to fetch ingredients listings' },
       { status: 500 }

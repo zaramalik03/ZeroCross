@@ -1,8 +1,7 @@
 "use client"
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// ── Types ─────────────────────────────────────────────────
 type ProductResult = {
   id:                   number
   name:                 string
@@ -27,24 +26,34 @@ const RANKING_LABELS: Record<number, { label: string; color: string; bg: string 
   3: { label: 'May Not Be Allergen-Free',         color: '#92400E', bg: '#FEF3C7' },
 }
 
-const PRODUCT_CATEGORIES = [
-  { category: 'Bakery',            symbol: '🥐' },
-  { category: 'Cafe',              symbol: '☕' },
-  { category: 'Restaurant',        symbol: '🍽️' },
-  { category: 'Food Truck',        symbol: '🚚' },
-  { category: 'Health Food Store', symbol: '🌿' },
-]
 
-// const tagColors: Record<string, { bg: string; text: string }> = {
-//   'gluten-free': { bg: '#D1FAE5', text: '#065F46' },
-//   'vegan': { bg: '#DBEAFE', text: '#1E40AF' },
-//   'keto': { bg: '#F3E8FF', text: '#6B21A8' },
-//   'paleo': { bg: '#FEF3C7', text: '#92400E' },
-//   'tree-nut': { bg: '#FEE2E2', text: '#991B1B' },
-//   'nut-free': { bg: '#D1FAE5', text: '#065F46' },
-// }
+const CUISINE_FLAGS: Record<string, string> = {
+  'Mexican':                      '🇲🇽',
+  'Mexican / Central American':   '🇲🇽',
+  'Mexican / Latin American':     '🇲🇽',
+  'Indian':                       '🇮🇳',
+  'Indian / South Asian':         '🇮🇳',
+  'Japanese':                     '🇯🇵',
+  'Japanese / East Asian':        '🇯🇵',
+  'East Asian / Southeast Asian': '🇯🇵',
+  'Korean':                       '🇰🇷',
+  'Thai':                         '🇹🇭',
+  'Ethiopian':                    '🇪🇹',
+  'Ethiopian / East African':     '🇪🇹',
+  'West African':                 '🇳🇬',
+  'African / West African':       '🇳🇬',
+  'Ghanaian':                     '🇬🇭',
+  'Caribbean':                    '🇯🇲',
+  'Brazilian':                    '🇧🇷',
+  'South American / Venezuelan':  '🇻🇪',
+  'American':                     '🇺🇸',
+  'American, Southern':           '🇺🇸',
+  'Middle Eastern':               '🫒',
+  'Mediterranean':                '🫒',
+  'American, Vegan':              '🇺🇸',
+  'American, European':           '🇺🇸',
+}
 
-// Add all east asian, south asian, southeast asian, european, middle eastern, latin american, and african categories for groceries
 const CULTURAL_CATEGORIES = [
   { id: 'mexican',         label: 'Mexican / Latin',  flag: '🌮' },
   { id: 'japanese',        label: 'Japanese',         flag: '🍱' },
@@ -60,47 +69,68 @@ const CULTURAL_CATEGORIES = [
 export default function GroceriesPage() {
   const [results, setResults]                   = useState<ProductResult[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  // const [selectedFilters, setSelectedFilters]   = useState<string[]>([])
-  const [search, setSearch] = useState('')
   const [loading, setLoading]                   = useState(true)
   const [error, setError]                       = useState<string | null>(null)
   const [selectedCulture, setSelectedCulture]   = useState<string | null>(null)
   const [selectedRanking, setSelectedRanking]   = useState<number | null>(null) 
+  const [productSearch, setProductSearch]       = useState('')
+  const [retryCount, setRetryCount]             = useState(0)
 
-  // const filtered = useMemo(() => {
-  //   return results.filter((grocery) => {
-  //     const catOk = !selectedCategory || grocery.category === selectedCategory
-  //     const searchOk = !search || grocery.name.toLowerCase().includes(search.toLowerCase())
-  //     const filterOk = selectedFilters.length === 0 || selectedFilters.every(f => grocery.dietaryTags.includes(f))
-  //     return catOk && searchOk && filterOk
-  //   })
-  // }, [selectedCategory, selectedFilters, search])
+  // const fetchProducts = useCallback(async () => {
+  //   setLoading(true)
+  //   setError(null)
+  //   try {
+  //     const params = new URLSearchParams()
+  //     if (selectedCategory)       params.set('category', selectedCategory)
+  //     if (selectedCulture)        params.set('culture',  selectedCulture)
+  //     if (selectedRanking)        params.set('ranking',  String(selectedRanking))
+  //     if (productSearch.trim())   params.set('productSearch', productSearch.trim())
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const params = new URLSearchParams()
-      if (selectedCategory)       params.set('category', selectedCategory)
-      if (selectedCulture)        params.set('culture',  selectedCulture)
-      if (selectedRanking)        params.set('ranking',  String(selectedRanking))
-      if (search.trim())          params.set('q',        search.trim())
+  //     const res = await fetch(`/api/products?${params.toString()}`)
+  //     if (!res.ok) throw new Error(`API error ${res.status}`)
+  //     const json = await res.json()
+  //     setResults(json.data ?? [])
+  //   } catch {
+  //     setError('Could not load product. Please try again.')
+  //     setResults([])
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }, [selectedCategory, selectedCulture, selectedRanking, productSearch])
 
-      const res = await fetch(`/api/products?${params.toString()}`)
-      if (!res.ok) throw new Error(`API error ${res.status}`)
-      const json = await res.json()
-      setResults(json.data ?? [])
-    } catch {
-      setError('Could not load product. Please try again.')
-      setResults([])
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedCategory, selectedCulture, selectedRanking, search])
-
+  // useEffect(() => {
+  //   fetchProducts()
+  // }, [fetchProducts])
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    let cancelled = false     // prevents setting state after unmount
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const params = new URLSearchParams()
+        if (selectedCategory)       params.set('category', selectedCategory)
+        if (selectedCulture)        params.set('culture',  selectedCulture)
+        if (selectedRanking)        params.set('ranking',  String(selectedRanking))
+        if (productSearch.trim())   params.set('productSearch', productSearch.trim())
+
+        const res = await fetch(`/api/products?${params.toString()}`)
+        if (!res.ok) throw new Error(`API error ${res.status}`)
+        const json = await res.json()
+
+        if (!cancelled) setResults(json.data ?? [])
+      } catch {
+        if (!cancelled) {
+          setError('Could not load products. Please try again.')
+          setResults([])
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+
+  }, [selectedCategory, selectedCulture, selectedRanking, productSearch, retryCount])
 
   return (
     <div className="page-shell px-6 lg:px-12 py-12">
@@ -118,81 +148,72 @@ export default function GroceriesPage() {
             Which category do you prefer?
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🍱</span>
-            <h2 className="mt-3 text-lg font-semibold">Grab&Go Meals</h2>
-            {/* <p className="mt-1 text-xs">Sit-Down Restaurants and Casual Dining</p> */}
-          </button>
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🧁</span>
-            <h2 className="mt-3 text-lg font-semibold">Desserts</h2>
-            {/* <p className="mt-1 text-xs">Order Ahead for Takeout</p> */}
-          </button>
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🥨</span>
-            <h2 className="mt-3 text-lg font-semibold">Snacks</h2>
-            {/* <p className="mt-1 text-xs">Find Dedicated Baked Goods</p> */}
-          </button>
-        </div>
-        {/* <div className="max-w-7xl mx-auto flex gap-3 overflow-x-auto pb-1">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-            style={!selectedCategory
-              ? { backgroundColor: '#1A3D2B', color: '#FAF7F0', borderColor: '#1A3D2B' }
-              : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }
-            }
-          >
-            All
-          </button>
-          {PRODUCT_CATEGORIES.map((c) => (
+          {[
+            { id: 'Meal', label: 'Grab & Go Meals', emoji: '🍱'},
+            { id: 'Dessert/Baked Good', label: 'Desserts / Baked Sweets',  emoji: '🧁'},
+            { id: 'Snack', label: 'Snacks', emoji: '🥨'},
+          ].map(c => (
             <button
-              key={c.category}
-              onClick={() => setSelectedCategory(c.category)}
-              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-              style={selectedCategory === c.category
-                ? { backgroundColor: '#1A3D2B', color: '#FAF7F0', borderColor: '#1A3D2B' }
-                : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }
-              }
+              key={c.id}
+              onClick={() => setSelectedCategory(selectedCategory === c.id ? null : c.id)}
+              className="rounded-3xl border p-5 text-left transition"
+              style={{
+                backgroundColor: selectedCategory === c.id ? '#151b3a' : '#FFFFFF',
+                borderColor:     selectedCategory === c.id ? '#151b3a' : '#E5E7EB',
+              }}
             >
-              {c.symbol} {c.category}
+              <span className="text-3xl">{c.emoji}</span>
+              <h2
+                className="mt-3 text-lg font-semibold"
+                style={{ color: selectedCategory === c.id ? '#FAF7F0' : '#151b3a' }}
+              >
+                {c.label}
+              </h2>
             </button>
           ))}
-        </div> */}
+        </div>
       </div>
       {/* ── Category filters ── */}
       <div style={{ borderBottom: '1px solid #D1D5DB'}} className="px-6 lg:px-12 py-3">
-        <div className="bg-white mt-10 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-5">
+          <div className="bg-white mt-10 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-5">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Culture</label>
-            <select className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm">
+            <select
+              className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm"
+              value={selectedCulture ?? 'all'}
+              onChange={e => setSelectedCulture(e.target.value === 'all' ? null : e.target.value)}
+            >
               {CULTURAL_CATEGORIES.map(c => (
-                <option
-                  key={c.id}
-                  onClick={() => setSelectedCulture(selectedCulture === c.id ? null : c.id)}
-                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-                  style={selectedCulture === c.id
-                    ? { backgroundColor: '#226580', color: '#FAF7F0', borderColor: '#226580' }
-                    : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-                >
+                <option key={c.id} value={c.id}>
                   {c.flag} {c.label}
                 </option>
               ))}
             </select>
-          </div>
+          </div> 
         {/* ── Search ── */}
         <div>
-          <div className="rounded-full border border-border px-5 py-2 text-sm font-semibold hover:border-primary">
-            <input
-              type="search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search"
-              style={{ borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', color: '#1A3D2B' }}
-            />
-          </div>
+          <div className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Name</div>
+            <div className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm">
+              <input
+                type="text"
+                value={productSearch}
+                onChange={f => setProductSearch(f.target.value)}
+                placeholder="Put In Name"
+                className="w-full outline-none"
+              />
+            </div>
         </div>
-        <button className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-primary">Clear all</button>
+        <button
+          onClick={() => {
+            setSelectedCategory(null)
+            setSelectedCulture(null)
+            setSelectedRanking(null)
+            setProductSearch('')
+          }}
+          className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-primary"
+        >
+          Clear all
+        </button>
       </div>
     </div>
       {/* ── Cultural cuisine filters ── */}
@@ -224,7 +245,7 @@ export default function GroceriesPage() {
         </div>
       </div> */}
       {/* Search */}
-      <div className="px-6 lg:px-12 py-4">
+      {/* <div className="px-6 lg:px-12 py-4">
         <input
           type="search"
           value={search}
@@ -233,8 +254,8 @@ export default function GroceriesPage() {
           className="w-full px-5 py-3 rounded-full text-sm outline-none border"
           style={{ borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', color: '#1A3D2B' }}
         />
-      </div>
-      {/* List of product results */}
+      </div> */}
+      {/* ── Results ── */}
       <div className="px-6 lg:px-12 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Status bar */}
@@ -242,12 +263,15 @@ export default function GroceriesPage() {
             <p className="text-sm" style={{ color: '#4A5568' }}>
               {loading
                 ? 'Loading...'
-                : `${results.length} place${results.length !== 1 ? 's' : ''} found`}
+                : `${results.length} product${results.length !== 1 ? 's' : ''} found`}
             </p>
             {error && (
               <p className="text-sm font-medium" style={{ color: '#991B1B' }}>
                 {error}
-                <button onClick={fetchProducts} className="ml-2 underline">Retry</button>
+                {/* <button onClick={fetchProducts} className="ml-2 underline">Retry</button> */}
+                <button onClick={() => setRetryCount(c => c + 1)} className="ml-2 underline">
+                  Retry
+                </button>
               </p>
             )}
           </div>
@@ -256,7 +280,7 @@ export default function GroceriesPage() {
             <div className="text-center py-20">
               <div className="text-5xl mb-4">🔍</div>
               <p className="font-semibold" style={{ color: '#151b3a' }}>
-                No places match your filters
+                No products match your filters
               </p>
               <p className="text-sm mt-1" style={{ color: '#6B7280' }}>
                 Try adjusting the category, cuisine, or ranking filters
@@ -264,7 +288,7 @@ export default function GroceriesPage() {
             </div>
           )}
           <div className="px-6 lg:px-12 py-4">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="max-w-7xl mx-h-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map(item => {
                   const rankMeta = item.ranking ? RANKING_LABELS[item.ranking] : null
                   return (
@@ -289,11 +313,11 @@ export default function GroceriesPage() {
                               {item.name}
                             </h3>
                             <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
-                              {item.category && ` · ${item.category}`}
+                              {item.category && `${item.category}`}
                             </p>
                             {item.culturalCuisine && (
-                              <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
-                                {item.culturalCuisine}
+                              <p className="text-sm mb-3 leading-relaxed" style={{ color: '#9CA3AF' }}>
+                                {CUISINE_FLAGS[item.culturalCuisine] ?? ''} {item.culturalCuisine}
                               </p>
                             )}
                           </div>
@@ -316,42 +340,6 @@ export default function GroceriesPage() {
                             {item.description}
                           </p>
                         )}
-
-                        {/* Allergen badges */}
-                        {/* {(item.freeOf?.length > 0 ||
-                          item.contains?.length > 0 ||
-                          item.mayContain?.length > 0) && (
-                          <div className="flex flex-wrap gap-1.5 mb-3">
-                            {item.freeOf?.map(a => (
-                              <span
-                                key={`free-${a}`}
-                                className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
-                              >
-                                ✓ {a}-free
-                              </span>
-                            ))}
-                            {item.mayContain?.map(a => (
-                              <span
-                                key={`may-${a}`}
-                                className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
-                              >
-                                ⚠ may contain {a}
-                              </span>
-                            ))}
-                            {item.contains?.map(a => (
-                              <span
-                                key={`has-${a}`}
-                                className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{ backgroundColor: '#FEE2E2', color: '#991B1B' }}
-                              >
-                                ✗ contains {a}
-                              </span>
-                            ))}
-                          </div>
-                        )} */}
-
                         {/* Safety flags */}
                         <div className="flex flex-wrap gap-2 mb-3">
                           {item.isDedicatedFacility && (
@@ -406,27 +394,6 @@ export default function GroceriesPage() {
                     </Link>
                   )
                 })}
-      
-                {/* {filtered.map((grocery) => (
-                    <div key={grocery.id} className="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow duration-200">
-                        <h3 className="text-lg font-semibold mb-2">{grocery.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{grocery.category}</p> */}
-                        {/* <div className="flex flex-wrap gap-2">
-                            {grocery.dietaryTags.map((tag) => {
-                                const style = getTagStyle(tag)
-                                return (
-                                    <span
-                                        key={tag}
-                                        className="text-xs font-semibold px-2 py-1 rounded"
-                                        style={{ backgroundColor: style.bg, color: style.text }}
-                                    >
-                                        {tag}
-                                    </span>
-                                )
-                            })}
-                        </div> */}
-                    {/* </div>
-                ))} */}
               </div>
               </div>
           </div>

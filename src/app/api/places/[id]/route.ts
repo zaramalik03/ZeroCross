@@ -7,14 +7,12 @@ import { eq } from 'drizzle-orm'
 
 export async function GET(
   req: NextRequest,
-  // { params }: { params: { id: string } }
-   { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // const id = parseInt(params.id)
   const { id: rawId } = await params
-  const id = parseInt(rawId)
+  const id = rawId
 
-  if (isNaN(id)) {
+  if (!id) {
     return NextResponse.json(
       { error: 'Invalid ID' },
       { status: 400 }

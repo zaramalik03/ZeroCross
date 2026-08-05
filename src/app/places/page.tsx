@@ -1,8 +1,7 @@
 "use client"
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// ── Types ─────────────────────────────────────────────────
 type PlaceResult = {
   id:                   number
   name:                 string
@@ -33,30 +32,32 @@ const RANKING_LABELS: Record<number, { label: string; color: string; bg: string 
   3: { label: 'Limited Allergen-Free Options',    color: '#92400E', bg: '#FEF3C7' },
 }
 
-// const DINING_CATEGORIES = [
-//   { category: 'Bakery',            symbol: '🥐' },
-//   { category: 'Cafe',              symbol: '☕' },
-//   { category: 'Restaurant',        symbol: '🍽️' },
-//   { category: 'Food Truck',        symbol: '🚚' },
-//   { category: 'Health Food Store', symbol: '🌿' },
-// ]
-
-const PLACE_CATEGORIES = [
-  {id: 'Dine-in', place: 'Restaurant'},
-  {id: 'Bakery', place: 'Bakery'},
-  {id: 'Bakery', place: 'Bakery & Café'},
-  {id: 'Café', place: 'Bakery & Café'},
-  {id: 'Café', place: 'Café'},
-  {id: 'Takeout', place: 'Restaurant'},
-]
-
-// const DINING_CATEGORIES = [
-//   { category: 'Bakery',            symbol: '🥐' },
-//   { category: 'Cafe',              symbol: '☕' },
-//   { category: 'Restaurant',        symbol: '🍽️' },
-//   { category: 'Food Truck',        symbol: '🚚' },
-//   { category: 'Health Food Store', symbol: '🌿' },
-// ]
+const CUISINE_FLAGS: Record<string, string> = {
+  'Mexican':                      '🇲🇽',
+  'Mexican / Central American':   '🇲🇽',
+  'Mexican / Latin American':     '🇲🇽',
+  'Indian':                       '🇮🇳',
+  'Indian / South Asian':         '🇮🇳',
+  'Japanese':                     '🇯🇵',
+  'Japanese / East Asian':        '🇯🇵',
+  'East Asian / Southeast Asian': '🇯🇵',
+  'Korean':                       '🇰🇷',
+  'Thai':                         '🇹🇭',
+  'Ethiopian':                    '🇪🇹',
+  'Ethiopian / East African':     '🇪🇹',
+  'West African':                 '🇳🇬',
+  'African / West African':       '🇳🇬',
+  'Ghanaian':                     '🇬🇭',
+  'Caribbean':                    '🇯🇲',
+  'Brazilian':                    '🇧🇷',
+  'South American / Venezuelan':  '🇻🇪',
+  'American':                     '🇺🇸',
+  'American, Southern':           '🇺🇸',
+  'Middle Eastern':               '🫒',
+  'Mediterranean':                '🫒',
+  'American, Vegan':              '🇺🇸',
+  'American, European':           '🇺🇸',
+}
 
 const CULTURAL_CATEGORIES = [
   { id: 'all',             label: 'All',               flag: '' },
@@ -77,36 +78,70 @@ export default function DiningPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedCulture, setSelectedCulture]   = useState<string | null>(null)
   const [selectedRanking, setSelectedRanking]   = useState<number | null>(null)
-  const [search, setSearch]                     = useState('')
+  const [locationSearch, setLocationSearch]     = useState('')
+  const [placeSearch, setPlaceSearch]           = useState('')
+  const [retryCount, setRetryCount]             = useState(0)
 
-  const fetchPlaces = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const params = new URLSearchParams()
-      if (selectedCategory)       params.set('category', selectedCategory)
-      if (selectedCulture)        params.set('culture',  selectedCulture)
-      if (selectedRanking)        params.set('ranking',  String(selectedRanking))
-      if (search.trim())          params.set('q',        search.trim())
-      // if (selectedAllergens.length > 0) {
-      //   params.set('avoid', selectedAllergens.join(','))
-      // }
+  // const fetchPlaces = useCallback(async () => {
+  //   setLoading(true)
+  //   setError(null)
+  //   try {
+  //     const params = new URLSearchParams()
+  //     if (selectedCategory)       params.set('category', selectedCategory)
+  //     if (selectedCulture)        params.set('culture',  selectedCulture)
+  //     if (selectedRanking)        params.set('ranking',  String(selectedRanking))
+  //     if (locationSearch.trim())  params.set('locationSearch', locationSearch.trim())
+  //     if (placeSearch.trim())     params.set('placeSearch', placeSearch.trim())
+  //     // if (selectedAllergens.length > 0) {
+  //     //   params.set('avoid', selectedAllergens.join(','))
+  //     // }
+  //     const res = await fetch(`/api/places?${params.toString()}`)
+  //     if (!res.ok) throw new Error(`API error ${res.status}`)
+  //     const json = await res.json()
+  //     setResults(json.data ?? [])
+  //   } catch {
+  //     setError('Could not load dining spots. Please try again.')
+  //     setResults([])
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }, [selectedCategory, selectedCulture, selectedRanking, placeSearch, locationSearch])
 
-      const res = await fetch(`/api/places?${params.toString()}`)
-      if (!res.ok) throw new Error(`API error ${res.status}`)
-      const json = await res.json()
-      setResults(json.data ?? [])
-    } catch {
-      setError('Could not load dining spots. Please try again.')
-      setResults([])
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedCategory, selectedCulture, selectedRanking, search])
-
+  // useEffect(() => {
+  //   fetchPlaces()
+  // }, [fetchPlaces])
   useEffect(() => {
-    fetchPlaces()
-  }, [fetchPlaces])
+    let cancelled = false     // prevents setting state after unmount
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const params = new URLSearchParams()
+        if (selectedCategory)        params.set('category',       selectedCategory)
+        if (selectedCulture && selectedCulture !== 'all')
+                                    params.set('culture',        selectedCulture)
+        if (selectedRanking)         params.set('ranking',        String(selectedRanking))
+        if (locationSearch.trim())   params.set('locationSearch', locationSearch.trim())
+        if (placeSearch.trim())      params.set('placeSearch',    placeSearch.trim())
+
+        const res = await fetch(`/api/places?${params.toString()}`)
+        if (!res.ok) throw new Error(`API error ${res.status}`)
+        const json = await res.json()
+
+        if (!cancelled) setResults(json.data ?? [])
+      } catch {
+        if (!cancelled) {
+          setError('Could not load dining spots. Please try again.')
+          setResults([])
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+
+  }, [selectedCategory, selectedCulture, selectedRanking, locationSearch, placeSearch, retryCount])
 
   return (
     <div className="page-shell min-h-screen px-6 lg:px-12 py-12">
@@ -123,38 +158,34 @@ export default function DiningPage() {
             Where are you going out for?
         </h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🍽️</span>
-            <h2 className="mt-3 text-lg font-semibold">Dine-in</h2>
-            <p className="mt-1 text-xs">Sit-Down Restaurants and Casual Dining</p>
-          </button>
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🥡</span>
-            <h2 className="mt-3 text-lg font-semibold">Takeout</h2>
-            <p className="mt-1 text-xs">Order Ahead for Takeout</p>
-          </button>
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🥐</span>
-            <h2 className="mt-3 text-lg font-semibold">Bakery</h2>
-            <p className="mt-1 text-xs">Find Dedicated Baked Goods</p>
-          </button>
-          <button className="rounded-3xl border p-5 text-left transition border-border bg-white hover:border-primary/60">
-            <span className="text-3xl">🍰</span>
-            <h2 className="mt-3 text-lg font-semibold">Café</h2>
-            <p className="mt-1 text-xs">Coffee, Sweets, and Treats</p>
-          </button>
-          {/* {PLACE_CATEGORIES.map(c => (
+          {[
+            { id: 'Restaurant', label: 'Dine-In', emoji: '🍽️', sub: 'Sit-Down Restaurants, Casual Dining, Takeout' },
+            { id: 'Bakery & Cafe',     label: 'Bakery & Cafe',  emoji: '🍰', sub: 'Find Dedicated Baked Goods, Sweets, Coffee' },
+          ].map(c => (
             <button
               key={c.id}
               onClick={() => setSelectedCategory(selectedCategory === c.id ? null : c.id)}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-              style={selectedCategory === c.id
-                ? { backgroundColor: '#151b3a', color: '#FAF7F0', borderColor: '#151b3a' }
-                : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
+              className="rounded-3xl border p-5 text-left transition"
+              style={{
+                backgroundColor: selectedCategory === c.id ? '#151b3a' : '#FFFFFF',
+                borderColor:     selectedCategory === c.id ? '#151b3a' : '#E5E7EB',
+              }}
             >
-              {c.place} {c.id}
+              <span className="text-3xl">{c.emoji}</span>
+              <h2
+                className="mt-3 text-lg font-semibold"
+                style={{ color: selectedCategory === c.id ? '#FAF7F0' : '#151b3a' }}
+              >
+                {c.label}
+              </h2>
+              <p
+                className="mt-1 text-xs"
+                style={{ color: selectedCategory === c.id ? '#A7C4B5' : '#6B7280' }}
+              >
+                {c.sub}
+              </p>
             </button>
-          ))} */}
+          ))}
         </div>
       </div>
       {/* ── Category filters ── */}
@@ -162,120 +193,57 @@ export default function DiningPage() {
         <div className="bg-white mt-10 flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card p-5">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Culture</label>
-            <select className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm">
+            <select
+              className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm"
+              value={selectedCulture ?? 'all'}
+              onChange={e => setSelectedCulture(e.target.value === 'all' ? null : e.target.value)}
+            >
               {CULTURAL_CATEGORIES.map(c => (
-                <option
-                  key={c.id}
-                  onClick={() => setSelectedCulture(selectedCulture === c.id ? null : c.id)}
-                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-                  style={selectedCulture === c.id
-                    ? { backgroundColor: '#226580', color: '#FAF7F0', borderColor: '#226580' }
-                    : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-                >
+                <option key={c.id} value={c.id}>
                   {c.flag} {c.label}
                 </option>
               ))}
-              {/* <option>All</option>
-              <option>Indian</option>
-              <option>Japanese</option>
-              <option>Ethiopian</option>
-              <option>Mexican</option>
-              <option>Lebanese</option>
-              <option>Thai</option>
-              <option>Nigerian</option>
-              <option>Korean</option>
-              <option>Italian</option>
-              <option>Turkish</option> */}
             </select>
-          </div>
-                {/* <div style={{ borderBottom: '1px solid #D1D5DB' }} className="px-6 lg:px-12 py-3">
-        <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-1">
-          <button
-            onClick={() => setSelectedCulture(null)}
-            className="shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-            style={!selectedCulture
-              ? { backgroundColor: '#226580', color: '#FAF7F0', borderColor: '#226580' }
-              : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-          >
-            All Cuisines
-          </button>
-          {CULTURAL_CATEGORIES.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setSelectedCulture(selectedCulture === c.id ? null : c.id)}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-              style={selectedCulture === c.id
-                ? { backgroundColor: '#226580', color: '#FAF7F0', borderColor: '#226580' }
-                : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-            >
-              {c.flag} {c.label}
-            </button>
-          ))}
-        </div>
-      </div> */}
-        {/* <div>
-          <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Location</label>
-          <input className="mt-2 rounded-full border border-border bg-background px-4 py-2 text-sm outline-none focus:border-primary" value=""></input>
-        </div> */}
+          </div> 
         {/* ── Search ── */}
         <div>
-          <div className="rounded-full border border-border px-5 py-2 text-sm font-semibold hover:border-primary">
-            <input
-              type="search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search Location"
-              // className="w-full max-w-lg px-5 py-3 rounded-full text-sm outline-none border"
-              style={{ borderColor: '#D1D5DB', backgroundColor: '#FFFFFF', color: '#1A3D2B' }}
-            />
-          </div>
+          <div className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Name</div>
+            <div className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm">
+              <input
+                type="text"
+                value={placeSearch}
+                onChange={f => setPlaceSearch(f.target.value)}
+                placeholder="Put In Name"
+                className="w-full outline-none"
+              />
+            </div>
         </div>
-        <button className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-primary">Clear all</button>
-      </div>
-        {/* <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto pb-1">
+        <div>
+          <div className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">Location</div>
+            <div className="mt-2 rounded-full border border-border bg-white px-4 py-2 text-sm">
+              <input
+                type="text"
+                value={locationSearch}
+                onChange={f => setLocationSearch(f.target.value)}
+                placeholder="Put In Location"
+                className="w-full outline-none"
+              />
+            </div>
+          </div>
           <button
-            onClick={() => setSelectedCategory(null)}
-            className="shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-            style={!selectedCategory
-              ? { backgroundColor: '#151b3a', color: '#FAF7F0', borderColor: '#151b3a' }
-              : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
+            onClick={() => {
+              setSelectedCategory(null)
+              setSelectedCulture(null)
+              setSelectedRanking(null)
+              setLocationSearch('')
+              setPlaceSearch('')
+            }}
+            className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-primary"
           >
-            All Types
+            Clear all
           </button>
-          {DINING_CATEGORIES.map(c => (
-            <button
-              key={c.category}
-              onClick={() => setSelectedCategory(selectedCategory === c.category ? null : c.category)}
-              className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition-all"
-              style={selectedCategory === c.category
-                ? { backgroundColor: '#151b3a', color: '#FAF7F0', borderColor: '#151b3a' }
-                : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-            >
-              {c.symbol} {c.category}
-            </button>
-          ))}
-        </div> */}
+        </div>
       </div>
-      {/* ── Ranking filter ── */}
-      {/* <div className="px-6 lg:px-12 py-3">
-        <div className="max-w-7xl mx-auto flex gap-2 flex-wrap">
-          {([1, 2, 3] as const).map(r => {
-            const meta = RANKING_LABELS[r]
-            return (
-              <button
-                key={r}
-                onClick={() => setSelectedRanking(selectedRanking === r ? null : r)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                style={selectedRanking === r
-                  ? { backgroundColor: meta.color, color: '#FFFFFF', borderColor: meta.color }
-                  : { backgroundColor: 'transparent', color: '#4A5568', borderColor: '#D1D5DB' }}
-              >
-                Rank {r} — {meta.label}
-              </button>
-            )
-          })}
-        </div> 
-      </div>*/}
       {/* ── Results ── */}
       <div className="px-6 lg:px-12 py-6">
         <div className="max-w-7xl mx-auto">
@@ -290,7 +258,10 @@ export default function DiningPage() {
             {error && (
               <p className="text-sm font-medium" style={{ color: '#991B1B' }}>
                 {error}
-                <button onClick={fetchPlaces} className="ml-2 underline">Retry</button>
+                {/* <button onClick={fetchPlaces} className="ml-2 underline">Retry</button> */}
+                <button onClick={() => setRetryCount(c => c + 1)} className="ml-2 underline">
+                  Retry
+                </button>
               </p>
             )}
           </div>
@@ -332,15 +303,8 @@ export default function DiningPage() {
                           {item.name}
                         </h3>
                         <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>
-                          {/* {item.streetAddress && `${item.streetAddress} · `}
-                          {item.city}, {item.state} */}
                           {item.category && `${item.category}`}
                         </p>
-                        {/* {item.culturalCuisine && (
-                          <p className="text-sm mt-2.0" style={{ color: '#9CA3AF' }}>
-                            {item.culturalCuisine}
-                          </p>
-                        )} */}
                       </div>
                       {/* Ranking badge */}
                       {rankMeta && (
@@ -363,7 +327,7 @@ export default function DiningPage() {
                     )}
                     {item.culturalCuisine && (
                       <p className="text-sm mb-3 leading-relaxed" style={{ color: '#9CA3AF' }}>
-                        {item.culturalCuisine}
+                        {CUISINE_FLAGS[item.culturalCuisine] ?? ''} {item.culturalCuisine}
                       </p>
                     )}
                     <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>
@@ -396,58 +360,12 @@ export default function DiningPage() {
                           👨‍🍳 Trained Staff
                         </span>
                       )}
-                      {/* {item.writtenAllergenMenu && (
-                        <span
-                          className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                          style={{ backgroundColor: '#FEF3C7', color: '#92400E' }}
-                        >
-                          📋 Written Allergen Menu
-                        </span>
-                      )} */}
-                      {/* {item.verified && (
-                        <span
-                          className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                          style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
-                        >
-                          ✓ ZeroCross Verified
-                        </span>
-                      )} */}
                     </div>
-
-                    {/* Know before you go */}
-                    {/* {item.knowBeforeYouGo && (
-                      <div
-                        className="rounded-xl px-4 py-3 mt-2"
-                        style={{ backgroundColor: '#FEF3C7', borderLeft: '3px solid #E8A020' }}
-                      >
-                        <p className="text-xs font-semibold mb-1" style={{ color: '#92400E' }}>
-                          Know before you go
-                        </p>
-                        <p className="text-xs leading-relaxed" style={{ color: '#78350F' }}>
-                          {item.knowBeforeYouGo}
-                        </p>
-                      </div>
-                    )} */}
-
                     {/* Footer row — website + "View details" cue */}
                     <div
                       className="flex items-center justify-between mt-3 pt-3"
                       style={{ borderTop: '1px solid #F3F4F6' }}
                     >
-                      {/* <div>
-                        {item.website && (
-                          <a
-                            href={item.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-medium underline"
-                            style={{ color: '#226580' }}
-                            onClick={e => e.stopPropagation()}
-                          >
-                            Visit website →
-                          </a>
-                        )}
-                      </div> */}
                       {/* Visual cue that the card is clickable */}
                       <span className="text-xs font-medium" style={{ color: '#9CA3AF' }}>
                         View details →

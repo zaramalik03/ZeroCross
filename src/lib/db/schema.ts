@@ -114,7 +114,7 @@ export const places = pgTable('places', {
 // status: 'free_of' | 'contains' | 'may_contain' | 'unknown'
 export const placesAllergens = pgTable('places_allergens', {
   id:         integer('id').generatedAlwaysAsIdentity().primaryKey(),
-  placeId:    integer('place_id')
+  placeId:    text('place_id')
                 .notNull()
                 .references(() => places.id, { onDelete: 'cascade' }),
   allergenId: integer('allergen_id')
@@ -129,7 +129,7 @@ export const placesAllergens = pgTable('places_allergens', {
 
 // ── junction table: places_diets ────────────────────────────────
 export const placesDiets = pgTable('places_diets', {
-  placeId: integer('place_id')
+  placeId: text('place_id')
              .notNull()
              .references(() => places.id, { onDelete: 'cascade' }),
   dietId:  integer('diet_id')
@@ -141,7 +141,7 @@ export const placesDiets = pgTable('places_diets', {
 
 // ── products ────────────────────────────────
 export const products = pgTable('products', {
-  id:                  text('id').primaryKey(),
+  id:                  integer('id').primaryKey(),
   name:                text('name').notNull(),
   brandName:           text('brand_name').notNull(),
   category:            text('category').notNull(),
@@ -218,7 +218,7 @@ export const ingredients = pgTable('ingredients', {
 // status: 'free_of' | 'contains' | 'may_contain' | 'unknown'
 export const ingredientAllergens = pgTable('ingredient_allergens', {
   id:           integer('id').generatedAlwaysAsIdentity().primaryKey(),
-  ingredientId: integer('ingredient_id')
+  ingredientId: text('ingredient_id')
                   .notNull()
                   .references(() => ingredients.id, { onDelete: 'cascade' }),
   allergenId:   integer('allergen_id')
@@ -232,7 +232,7 @@ export const ingredientAllergens = pgTable('ingredient_allergens', {
  
 // ── junction table: ingredient_diets ────────────────────────────
 export const ingredientDiets = pgTable('ingredient_diets', {
-  ingredientId: integer('ingredient_id')
+  ingredientId: text('ingredient_id')
                   .notNull()
                   .references(() => ingredients.id, { onDelete: 'cascade' }),
   dietId:       integer('diet_id')

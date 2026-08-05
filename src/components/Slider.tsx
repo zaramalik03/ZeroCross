@@ -2,17 +2,6 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// const cuisines = [
-//   { flag: '🇯🇵', name: 'Japanese', dish: 'Miso Ramen', tags: ['gluten-free', 'nut-free'] },
-//   { flag: '🇮🇳', name: 'Indian', dish: 'Dal Tadka', tags: ['gluten-free', 'vegan'] },
-//   { flag: '🇲🇽', name: 'Mexican', dish: 'Tacos de Canasta', tags: ['gluten-free', 'nut-free'] },
-//   { flag: '🇱🇧', name: 'Lebanese', dish: 'Mezze Platter', tags: ['vegan', 'gluten-free'] },
-//   { flag: '🇹🇭', name: 'Thai', dish: 'Pad See Ew', tags: ['gluten-free', 'nut-free'] },
-//   { flag: '🇪🇹', name: 'Ethiopian', dish: 'Injera & Wot', tags: ['gluten-free', 'vegan'] },
-//   { flag: '🇵🇪', name: 'Peruvian', dish: 'Ceviche', tags: ['gluten-free', 'pescatarian'] },
-//   { flag: '🇰🇷', name: 'Korean', dish: 'Bibimbap', tags: ['gluten-free', 'nut-free'] },
-// ]
-
 const steps = [
   { num: '01', title: 'Set your allergen profile', desc: 'Tell us your restrictions once. Every result you see is filtered to match — automatically.' },
   { num: '02', title: 'Browse verified spaces', desc: 'Restaurants, grocery brands, and recipes all screened for gluten-free and nut-free production.' },
@@ -26,15 +15,6 @@ const allergens = [
 ]
 
 export default function Slider() {
-  const [activeCuisine, setActiveCuisine] = useState(0)
-
-  // useEffect(() => {
-  //   const t = setInterval(() => setActiveCuisine(c => (c + 1) % cuisines.length), 2800)
-  //   return () => clearInterval(t)
-  // }, [])
-
-  // const c = cuisines[activeCuisine]
-
   return (
     <div style={{ fontFamily: 'Fraunces, system-ui, serif', fontWeight: 550, color: '#151b3a' }}>
 
@@ -43,7 +23,6 @@ export default function Slider() {
         className="relative overflow-hidden"
         style={{ backgroundColor: '#e2efef', minHeight: '88vh' }}
       >
-        {/* Diagonal cream accent */}
         <div
         // w/2 for adding a diagonal cream accent on the right side of the hero section if needed
           className="absolute bottom-0 right-0 h-full hidden lg:block" 
@@ -207,92 +186,3 @@ export default function Slider() {
     </div>
   )
 }
-
-
-
-//  Old Code from last week
-// "use client"
-// import React, {useState, useEffect} from 'react'
-// import Link from 'next/link'
-
-// const data = [
-//   {
-//     num: '1',
-//     title: 'Set your allergy profile',
-//     desc: 'Tell us your restrictions once. Everything on the platform filters to match your exact needs automatically.',
-//   },
-//   {
-//     num: '2',
-//     title: 'Browse without second-guessing',
-//     desc: 'Every restaurant, product, and recipe you see has been verified for your profile — the unsafe stuff filters out.',
-//   },
-//   {
-//     num: '3',
-//     title: 'Feel confident in your dietary lifestyle',
-//     desc: 'Community-verified, label-checked, and cross-contact assessed. You can trust what you see here.',
-//   },
-// ];
-
-// const allergens = [
-//   { icon: '🌾', name: 'Gluten' }, { icon: '🥜', name: 'Peanuts' }, { icon: '🌰', name: 'Tree Nuts' },
-//   { icon: '🥛', name: 'Dairy' }, { icon: '🥚', name: 'Eggs' }, { icon: '🫛', name: 'Soy' },
-//   { icon: '🐟', name: 'Fish' }, { icon: '🦞', name: 'Shellfish' }, { icon: '🌱', name: 'Sesame' },
-// ]
-
-// const Slider = () => {
-//     return (
-//         <div>
-//             <div className='flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-9rem)] lg:flex-row bg-fuchsia-50'>
-//                 {/* TEXT CONTAINER */}
-//                 <div className='h-1/2 flex items-center justify-center flex-col gap-8 text-red-500 font-bold lg:h-full'>
-//                     <h1 className='text-5xl items-center p-4'>
-//                         Find groceries, dining places, and recipes completely allergen-free.
-//                     </h1>
-//                     <button className='bg-red-500 text-white p-4 md:text-2xl xl:text-2xl'>
-//                         Get Started
-//                     </button>
-//                 </div>
-//                 <div className="flex flex-col w-full relative p-8 gap-10 items-center justify-center">
-//                     {data.map((item) => (
-//                         <div key={item.num}>
-//                             <h3 className="text-3xl font-semibold">{item.title}</h3>
-//                             <p className="text-xl mt-1 text-sm">{item.desc}</p>
-//                         </div>
-//                     ))}
-//                 </div>
-//             </div>
-//             {/* <div className='flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-9rem)] lg:flex-row bg-fuchsia-20'>
-//                 <div className='h-1/2 flex items-center justify-center flex-col gap-8 text-red-500 font-bold lg:h-full'></div>
-//                     <h1 className='text-5xl items-center p-4'>
-//                         Covers the Top 9 Allergens and Many More
-//                     </h1>
-//                 </div>
-//                 <div className="flex flex-col w-full relative p-8 gap-10 items-center justify-center">
-//                   {allergens.map((f) => (
-//                     <div
-//                         key={f.title}
-//                         className="rounded-xl w-35 p-6 border flex flex-row items-center justify-center"
-//                         >
-//                         <span className="text-3xl mb-3">{f.icon}</span>
-//                         <h3
-//                             className="text-sm font-semibold text-center"
-//                             style={{ fontFamily: 'Sora, sans-serif', color: 'var(--foreground)' }}
-//                         >
-//                             {f.title}
-//                         </h3>
-//                     </div>
-//                     ))} 
-//             </div> */}
-//             {/* <div className='flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-9rem)] lg:flex-row bg-fuchsia-20'>
-//                 <div className='h-1/2 flex items-center justify-center flex-col gap-8 text-red-500 font-bold lg:h-full'></div>
-//                     <h1 className='text-5xl items-center p-4'>
-//                         ZeroCross is the simple way to find restaurants, groceries, and recipes that match your allergies — reviewed by people with the same restrictions as you.
-//                     </h1>
-//                 </div>
-//                     ))} 
-//             </div> */}
-//         </div>
-//     )
-// }
-
-// export default Slider
